@@ -3,7 +3,7 @@ const router = express.Router();
 
 router.get("/test", (req, res) => {
 	res.json({
-		message: "Đường truyền API Lịch chiếu & Phòng của HOÀNG hoạt động tốt!",
+		message: "Đường truyền API Thanh toán MoMo/VNPAY của ĐẠT hoạt động tốt!",
 	});
 });
 
