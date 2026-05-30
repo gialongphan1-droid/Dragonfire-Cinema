@@ -9,6 +9,19 @@ Chào cả nhà, đây là tài liệu hướng dẫn vận hành và quy chuẩ
 Dự án được tổ chức theo mô hình MVC để dễ dàng chia việc cho 6 thành viên:
 
 ````text
+
+client/
+└── src/
+    └── pages/
+        ├── auth/        # Long Phan: Module Tài khoản & Thành viên
+        ├── movie/       # Lê Long: Module Quản lý thông tin Phim
+        ├── showtime/    # Hoàng: Module Quản lý Suất chiếu & Phòng chiếu
+        ├── booking/     # Hiếu: Module Đặt vé & Chọn ghế ngồi
+        ├── product/     # Kỷ: Module Danh sách gói Combo bắp nước
+        ├── payment/     # Đạt: Module Hóa đơn & Thanh toán
+        ├── Header.js    # Thành phần thanh thực đơn trên cùng (Dùng chung)
+        └── Footer.js    # Thành phần chân trang dưới cùng (Dùng chung)
+
 server/
 ├── config/         # Cấu hình DB (db.js)
 ├── controllers/    # Logic xử lý chính (Đại não)
@@ -20,16 +33,18 @@ server/
 ├── index.js        # File khởi chạy chính
 └── package.json    # Quản lý thư viện
 
-## 📌 2. BẢNG PHÂN CÔNG CÔNG VIỆC
+## 📌 2. BẢNG PHÂN CÔNG CÔNG VIỆC TOÀN DIỆN
 
-| STT | Thành viên | Chức năng phụ trách | File Models | File Routes |
-| :--- | :--- | :--- | :--- | :--- |
-| **1** | **Hiếu** | Đặt vé & Giữ ghế | `Booking.js` | `bookingRoutes.js` |
-| **2** | **Kỷ** | Combo bắp nước | `Product.js` | `productRoutes.js` |
-| **3** | **Hoàng** | Phòng & Lịch chiếu | `Showtime.js` | `showtimeRoutes.js` |
-| **4** | **Lê Long** | Quản lý phim | `Movie.js` | `movieRoutes.js` |
-| **5** | **Đạt** | Thanh toán | _(Dùng chung)_ | `paymentRoutes.js` |
-| **6** | **Long Phan** | Auth & Điểm thưởng | `User.js` | `authRoutes.js` |
+Để đảm bảo tính đồng bộ, mỗi thành viên sẽ chịu trách nhiệm phát triển trọn gói tính năng từ tầng dữ liệu Backend cho đến giao diện hiển thị Frontend tương ứng của module đó.
+
+| STT | Thành viên | Chức năng phụ trách | File Models (Backend) | File Routes (Backend) | Thư mục trang (Frontend) |
+| :---: | :--- | :--- | :--- | :--- | :--- | :---: | :--- | :--- | :--- | :--- | :--- |
+| **1** | **Long Phan** | Auth & Điểm thưởng | `User.js` | `authRoutes.js` | `client/src/pages/auth/` |
+| **2** | **Lê Long** | Quản lý phim | `Movie.js` | `movieRoutes.js` | `client/src/pages/movie/` |
+| **3** | **Hoàng** | Phòng & Lịch chiếu | `Showtime.js` | `showtimeRoutes.js` | `client/src/pages/showtime/` |
+| **4** | **Hiếu** | Đặt vé & Giữ ghế | `Booking.js` | `bookingRoutes.js` | `client/src/pages/booking/` |
+| **5** | **Kỷ** | Combo bắp nước | `Product.js` | `productRoutes.js` | `client/src/pages/product/` |
+| **6** | **Đạt** | Thanh toán | _(Dùng chung User.js, Booking.js, Showtime.js)_ | `paymentRoutes.js` | `client/src/pages/payment/` |
 
 ## 🛠️ 3. QUY TRÌNH LÀM VIỆC (Git)
 Mở Terminal tại thư mục `server/` và thực hiện theo thứ tự sau để tránh xung đột code:
