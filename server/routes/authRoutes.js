@@ -10,7 +10,16 @@ const { verifyToken } = require("../middleware/authMiddleware");
 // =========================================================
 router.post("/register", async (req, res) => {
 	try {
-		const { name, email, password } = req.body;
+		// Phòng chống Injection: Ép kiểu dữ liệu đầu vào bắt buộc là chuỗi (String)
+		const name = String(req.body.name || "").trim();
+		const email = String(req.body.email || "").trim();
+		const password = String(req.body.password || "");
+
+		if (!name || !email || !password) {
+			return res
+				.status(400)
+				.json({ success: false, message: "Vui lòng nhập đầy đủ thông tin!" });
+		}
 
 		// 1. Kiểm tra tài khoản trùng
 		let user = await User.findOne({ email });
@@ -19,7 +28,7 @@ router.post("/register", async (req, res) => {
 				.status(400)
 				.json({ success: false, message: "Email này đã được sử dụng!" });
 
-		// 2. Tạo User mới
+		// 2. Tạo User mới (Mặc định role: "user" theo cấu hình Model)
 		user = new User({ name, email, password });
 
 		// 3. Mã hóa mật khẩu trước khi lưu
@@ -38,7 +47,16 @@ router.post("/register", async (req, res) => {
 // =========================================================
 router.post("/login", async (req, res) => {
 	try {
-		const { email, password } = req.body;
+		// PHÒNG CHỐNG NOSQL INJECTION: Ép kiểu đầu vào thành chuỗi thuần túy.
+		// Nếu hacker gửi {"$ne": ""}, nó sẽ bị biến thành chuỗi '{"$ne": ""}' và không thể thao túng câu lệnh MongoDB.
+		const email = String(req.body.email || "").trim();
+		const password = String(req.body.password || "");
+
+		if (!email || !password) {
+			return res
+				.status(400)
+				.json({ success: false, message: "Vui lòng nhập email và mật khẩu!" });
+		}
 
 		// 1. Kiểm tra User tồn tại không
 		const user = await User.findOne({ email });
@@ -83,7 +101,7 @@ router.post("/login", async (req, res) => {
 });
 
 // =========================================================
-// [GET] http://localhost:5000/api/auth/profile -> LẤY PROFILE (BỊ THIẾU ĐOẠN NÀY NÈ)
+// [GET] http://localhost:5000/api/auth/profile -> LẤY PROFILE
 // =========================================================
 router.get("/profile", verifyToken, async (req, res) => {
 	try {

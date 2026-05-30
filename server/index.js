@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
-const connectDB = require("./config/db"); // Import hàm kết nối mới
+const connectDB = require("./config/db");
 
 // IMPORT CÁC FILE ROUTES CỦA CÁC THÀNH VIÊN VÀO ĐÂY
 const authRoutes = require("./routes/authRoutes");
@@ -16,21 +16,29 @@ const app = express();
 // Kết nối DB
 connectDB();
 
-// MIDDLEWARES CẤU HÌNH HỆ THỐNG (Bắt buộc nằm TRƯỚC Routes)
+// MIDDLEWARES CẤU HÌNH HỆ THỐNG
 app.use(express.json());
-app.use(cors());
 
-// KHAI BÁO TIỀN TỐ ĐƯỜNG DẪN (URL) CHO TỪNG MODULE
-app.use("/api/auth", authRoutes); // <-- Phần của Long Phan
-app.use("/api/bookings", bookingRoutes); // <-- Phần của Hiếu
-app.use("/api/movies", movieRoutes); // <-- Phần của Lê Long
-app.use("/api/payments", paymentRoutes); // <-- Phần của Đạt
-app.use("/api/products", productRoutes); // <-- Phần của Kỷ
-app.use("/api/showtimes", showtimeRoutes); // <-- Phần của Hoàng
+// Giới hạn CORS chỉ cho phép duy nhất Frontend của nhóm truy cập
+app.use(
+	cors({
+		origin: "http://localhost:3000",
+		methods: ["GET", "POST", "PUT", "DELETE"],
+		credentials: true,
+	}),
+);
+
+// KHAI BÁO TIỀN TỐ ĐƯỜNG DẪN (URL) DẠNG SỐ ÍT NHẤT QUÁN
+app.use("/api/auth", authRoutes); // Long Phan
+app.use("/api/booking", bookingRoutes); // Hiếu
+app.use("/api/movie", movieRoutes); // Lê Long
+app.use("/api/payment", paymentRoutes); // Đạt
+app.use("/api/product", productRoutes); // Kỷ
+app.use("/api/showtime", showtimeRoutes); // Hoàng
 
 // Cấu hình trang test nhanh khi vào http://localhost:5000/
 app.get("/", (req, res) => {
-	res.send("🚀 Server Dragonfire Cinema đang chạy mượt mà!");
+	res.send("🚀 Server Dragonfire Cinema đang chạy mượt mà và bảo mật!");
 });
 
 const PORT = process.env.PORT || 5000;
