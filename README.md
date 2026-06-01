@@ -59,7 +59,7 @@ server/
 
 ## 🎨 PHÂN CÔNG CSS (QUAN TRỌNG)
 
-**Tất cả CSS tập trung tại `client/src/index.css`.** Mỗi thành viên chỉ được dùng class được phân công.
+**Tất cả CSS tập trung tại `client/src/index.css`.** Mỗi thành viên dùng class được phân công.
 
 ### Bảng class CSS theo module
 
