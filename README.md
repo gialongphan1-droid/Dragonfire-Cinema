@@ -1,6 +1,13 @@
-# 🚀 HƯỚNG DẪN DỰ ÁN BACKEND - DRAGONFIRE CINEMA
+# 🎨 HƯỚNG DẪN CSS CHUNG - DRAGONFIRE CINEMA
 
-Chào cả nhà, đây là tài liệu hướng dẫn vận hành và quy chuẩn code cho dự án Dragonfire Cinema. Mọi người bắt buộc phải tuân thủ để tránh xung đột code.
+## 📌 NGUYÊN TẮC CƠ BẢN
+
+1. **TẤT CẢ CSS tập trung tại 1 file duy nhất:** `client/src/index.css`
+2. **KHÔNG dùng inline style** (style={{...}})
+3. **KHÔNG tạo file CSS riêng** cho từng component
+4. **Dùng className** đã được định nghĩa sẵn
+5. **Khi cần class mới, vào trong index.css để tạo** Ctrl + F nhập tên tiếng việt có dấu của mình để tìm phần của mình và thêm vào
+6. **Tuyệt đối** không thêm css của mình vào phần của người khác để giữ sạch sẽ phần của người ta
 
 ---
 
@@ -31,34 +38,81 @@ server/
 ├── .env            # Biến môi trường (Bảo mật)
 ├── index.js        # File khởi chạy chính
 └── package.json    # Quản lý thư viện
-```
+````
 
 ---
 
-# 📌 2. BẢNG PHÂN CÔNG CÔNG VIỆC TOÀN DIỆN
-
-Để đảm bảo tính đồng bộ, mỗi thành viên sẽ chịu trách nhiệm phát triển trọn gói tính năng từ tầng dữ liệu Backend cho đến giao diện hiển thị Frontend tương ứng của module đó.
-
-| STT | Thành viên | Chức năng phụ trách | File Models (Backend) | File Routes (Backend) | Thư mục trang (Frontend) |
-| :---: | :--- | :--- | :--- | :--- | :--- |
-| **1** | Long Phan | Auth & Điểm thưởng | `User.js` | `authRoutes.js` | `client/src/pages/auth/` |
-| **2** | Lê Long | Quản lý phim | `Movie.js` | `movieRoutes.js` | `client/src/pages/movie/` |
-| **3** | Hoàng | Phòng & Lịch chiếu | `Showtime.js` | `showtimeRoutes.js` | `client/src/pages/showtime/` |
-| **4** | Hiếu | Đặt vé & Giữ ghế | `Booking.js` | `bookingRoutes.js` | `client/src/pages/booking/` |
-| **5** | Kỷ | Combo bắp nước | `Product.js` | `productRoutes.js` | `client/src/pages/product/` |
-| **6** | Đạt | Thanh toán | `User.js`, `Booking.js`, `Showtime.js` | `paymentRoutes.js` | `client/src/pages/payment/` |
 ---
+
+## 🗂️ BẢNG PHÂN CÔNG CÔNG VIỆC
+
+| STT | Thành viên | Chức năng                | Backend Models                         | Backend Routes      | Frontend Folder   |
+| :-: | :--------- | :----------------------- | :------------------------------------- | :------------------ | :---------------- |
+|  1  | Long Phan  | Auth & Điểm thưởng       | `User.js`                              | `authRoutes.js`     | `pages/auth/`     |
+|  2  | Lê Long    | Quản lý phim             | `Movie.js`                             | `movieRoutes.js`    | `pages/movie/`    |
+|  3  | Hoàng      | Suất chiếu & Phòng chiếu | `Showtime.js`                          | `showtimeRoutes.js` | `pages/showtime/` |
+|  4  | Hiếu       | Đặt vé & Giữ ghế         | `Booking.js`                           | `bookingRoutes.js`  | `pages/booking/`  |
+|  5  | Kỷ         | Combo bắp nước           | `Product.js`                           | `productRoutes.js`  | `pages/product/`  |
+|  6  | Đạt        | Thanh toán               | `User.js`, `Booking.js`, `Showtime.js` | `paymentRoutes.js`  | `pages/payment/`  |
+
+---
+
+## 🎨 PHÂN CÔNG CSS (QUAN TRỌNG)
+
+**Tất cả CSS tập trung tại `client/src/index.css`.** Mỗi thành viên chỉ được dùng class được phân công.
+
+### Bảng class CSS theo module
+
+| Thành viên    | Module   | Class được phép dùng                                                                                                                                                                                                                                                                                                                                                   |
+| ------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Long Phan** | Auth     | `.login-container`, `.register-container`, `.home-container`, `.login-card`, `.register-card`, `.login-title`, `.register-title`, `.login-form`, `.register-form`, `.login-btn`, `.register-btn`, `.vip-card`, `.vip-card-title`, `.vip-card-row`, `.vip-card-label`, `.vip-card-rank`, `.vip-card-points`, `.welcome-title`, `.logout-home-btn`, `.bottom-login-link` |
+| **Lê Long**   | Movie    | `.movie-grid`, `.movie-card`, `.movie-poster`, `.movie-info`, `.movie-title`, `.movie-duration`                                                                                                                                                                                                                                                                        |
+| **Hoàng**     | Showtime | `.showtime-container`, `.showtime-item`, `.showtime-time`                                                                                                                                                                                                                                                                                                              |
+| **Hiếu**      | Booking  | `.seat-map`, `.screen`, `.seat-row`, `.seat`, `.seat.available`, `.seat.selected`, `.seat.booked`                                                                                                                                                                                                                                                                      |
+| **Kỷ**        | Product  | `.product-grid`, `.product-card`, `.product-price`                                                                                                                                                                                                                                                                                                                     |
+| **Đạt**       | Payment  | `.payment-container`, `.payment-methods`, `.payment-method`, `.payment-method.selected`, `.payment-summary`, `.payment-total`                                                                                                                                                                                                                                          |
+
+### Class dùng chung cho tất cả
+
+| Class                                            | Mô tả                                    |
+| ------------------------------------------------ | ---------------------------------------- |
+| `.header`, `.footer`                             | Header và Footer của trang               |
+| `.container`                                     | Container chính, max-width 1200px        |
+| `.btn`, `.btn-primary`, `.btn-outline`           | Các loại nút bấm                         |
+| `.form-group`, `.form-control`                   | Form nhập liệu                           |
+| `.error-message`                                 | Thông báo lỗi (nền đỏ)                   |
+| `.loading`                                       | Trạng thái đang tải                      |
+| `.text-center`                                   | Căn giữa chữ                             |
+| `.text-primary`, `.text-accent`, `.text-success` | Màu chữ                                  |
+| `.mt-1` đến `.mt-5`                              | Margin top (5px, 10px, 15px, 20px, 30px) |
+| `.mb-1` đến `.mb-5`                              | Margin bottom                            |
+| `.flex`, `.flex-between`, `.flex-center`         | Flexbox utilities                        |
+
+### Màu sắc chung (CSS Variables)
+
+````css
+:root {
+    --primary-color: #e50914;    /* Màu đỏ chủ đạo */
+    --primary-dark: #b20710;      /* Màu đỏ đậm */
+    --bg-color: #141414;          /* Màu nền chính */
+    --surface-color: #1f1f1f;     /* Màu nền thẻ/card */
+    --text-primary: #ffffff;      /* Màu chữ chính */
+    --text-secondary: #b3b3b3;    /* Màu chữ phụ */
+    --accent-color: #ffd700;      /* Màu vàng (điểm thưởng) */
+    --error-color: #ff4444;       /* Màu đỏ lỗi */
+    --success-color: #4caf50;     /* Màu xanh thành công */
+}
 
 ## 🛠️ 3. QUY TRÌNH LÀM VIỆC (Git)
 
-Mở Terminal tại **thư mục gốc của dự án** (*Dragonfire Cinema*) và thực hiện theo đúng thứ tự sau để tránh xung đột code khi làm việc nhóm.
+Mở Terminal tại **thư mục gốc của dự án** (_Dragonfire Cinema_) và thực hiện theo đúng thứ tự sau để tránh xung đột code khi làm việc nhóm.
 
 ### Bước 1: Chuyển sang nhánh chung và cập nhật code mới nhất
 
 ```bash id="qlp0gi"
 git checkout dev
 git pull origin dev
-```
+````
 
 ### Bước 2: Tạo nhánh tính năng riêng
 
@@ -97,10 +151,10 @@ git push origin feature/quan-ly-phim
 
 ### Lưu ý
 
-* Luôn cập nhật nhánh `dev` trước khi tạo nhánh mới.
-* Mỗi thành viên làm việc trên nhánh riêng của mình.
-* Không commit trực tiếp lên `main`.
-* Chỉ merge vào `dev` sau khi kiểm tra code hoàn chỉnh.
+- Luôn cập nhật nhánh `dev` trước khi tạo nhánh mới.
+- Mỗi thành viên làm việc trên nhánh riêng của mình.
+- Không commit trực tiếp lên `main`.
+- Chỉ merge vào `dev` sau khi kiểm tra code hoàn chỉnh.
 
 ---
 
