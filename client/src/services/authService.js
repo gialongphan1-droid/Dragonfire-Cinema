@@ -3,40 +3,76 @@ import axios from "axios";
 const API_URL = "http://localhost:5000/api/auth";
 
 const authService = {
-	// 1. Gửi dữ liệu đăng ký xuống Backend
 	register: async (name, email, password) => {
-		const response = await axios.post(`${API_URL}/register`, {
-			name,
-			email,
-			password,
-		});
-		return response.data;
-	},
-
-	// 2. Gửi dữ liệu đăng nhập và nhận Token
-	login: async (email, password) => {
-		const response = await axios.post(`${API_URL}/login`, { email, password });
-		if (response.data.success && response.data.token) {
-			// Lưu token vào trình duyệt luôn cho tiện
-			localStorage.setItem("token", response.data.token);
+		try {
+			const response = await axios.post(`${API_URL}/register`, {
+				name,
+				email,
+				password,
+			});
+			console.log("Register response:", response.data);
+			return response.data;
+		} catch (error) {
+			console.error("Register error:", error);
+			throw error;
 		}
-		return response.data;
 	},
 
-	// 3. Lấy thông tin cá nhân bằng Token bảo mật
+	login: async (email, password) => {
+		try {
+			const response = await axios.post(`${API_URL}/login`, {
+				email,
+				password,
+			});
+
+			console.log("Login response:", response.data);
+
+			if (response.data.success && response.data.data?.token) {
+				localStorage.setItem("token", response.data.data.token);
+				localStorage.setItem("user", JSON.stringify(response.data.data.user));
+			}
+
+			return response.data;
+		} catch (error) {
+			console.error("Login error:", error);
+			throw error;
+		}
+	},
+
 	getProfile: async () => {
 		const token = localStorage.getItem("token");
-		if (!token) return null;
 
-		const response = await axios.get(`${API_URL}/profile`, {
-			headers: { Authorization: `Bearer ${token}` },
-		});
-		return response.data;
+		if (!token) {
+			return { success: false, message: "Chưa đăng nhập" };
+		}
+
+		try {
+			const response = await axios.get(`${API_URL}/profile`, {
+				headers: { Authorization: `Bearer ${token}` },
+			});
+			return response.data;
+		} catch (error) {
+			console.error("GetProfile error:", error);
+			throw error;
+		}
 	},
 
-	// 4. Đăng xuất xóa token
 	logout: () => {
 		localStorage.removeItem("token");
+		localStorage.removeItem("user");
+		window.location.href = "/login";
+	},
+
+	getCurrentUser: () => {
+		const userStr = localStorage.getItem("user");
+		if (userStr) {
+			return JSON.parse(userStr);
+		}
+		return null;
+	},
+
+	getToken: () => {
+		return localStorage.getItem("token");
 	},
 };
 

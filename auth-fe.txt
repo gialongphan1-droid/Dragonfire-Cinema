@@ -1,0 +1,739 @@
+=== client/src/App.js ===
+// client/src/App.js (version React Router)
+import React from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import Login from "./pages/auth/Login";
+import Register from "./pages/auth/Register";
+import Home from "./pages/auth/Home";
+
+// Component bảo vệ route
+const PrivateRoute = ({ children }) => {
+	const token = localStorage.getItem("token");
+	return token ? children : <Navigate to="/login" />;
+};
+
+function App() {
+	return (
+		<BrowserRouter>
+			<Routes>
+				<Route path="/login" element={<Login />} />
+				<Route path="/register" element={<Register />} />
+				<Route
+					path="/home"
+					element={
+						<PrivateRoute>
+							<Home />
+						</PrivateRoute>
+					}
+				/>
+				<Route
+					path="/"
+					element={
+						<PrivateRoute>
+							<Home />
+						</PrivateRoute>
+					}
+				/>
+			</Routes>
+		</BrowserRouter>
+	);
+}
+
+export default App;
+=== client/src/App.test.js ===
+import { render, screen } from '@testing-library/react';
+import App from './App';
+
+test('renders learn react link', () => {
+  render(<App />);
+  const linkElement = screen.getByText(/learn react/i);
+  expect(linkElement).toBeInTheDocument();
+});
+=== client/src/index.js ===
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import './index.css';
+import App from './App';
+import reportWebVitals from './reportWebVitals';
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+
+// If you want to start measuring performance in your app, pass a function
+// to log results (for example: reportWebVitals(console.log))
+// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
+reportWebVitals();
+=== client/src/pages/auth/Home.js ===
+import React, { useEffect, useState } from "react";
+import authService from "../../services/authService";
+import Header from "../Header";
+import Footer from "../Footer";
+
+const Home = () => {
+	const [user, setUser] = useState(null);
+	const [loading, setLoading] = useState(true);
+
+	useEffect(() => {
+		const loadProfile = async () => {
+			try {
+				const data = await authService.getProfile();
+				if (data && data.success) {
+					setUser(data.data.user);
+				} else {
+					window.location.href = "/login";
+				}
+			} catch (err) {
+				console.error("Lỗi tải profile:", err);
+				authService.logout();
+				window.location.href = "/login";
+			} finally {
+				setLoading(false);
+			}
+		};
+		loadProfile();
+	}, []);
+
+	if (loading) {
+		return (
+			<div
+				style={{
+					padding: "40px",
+					textAlign: "center",
+					color: "var(--text-secondary)",
+				}}
+			>
+				Đang tải thông tin tài khoản...
+			</div>
+		);
+	}
+
+	if (!user) {
+		return null;
+	}
+
+	return (
+		<div
+			style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}
+		>
+			<Header />
+
+			<div
+				style={{
+					flex: 1,
+					display: "flex",
+					flexDirection: "column",
+					alignItems: "center",
+					justifyContent: "center",
+					padding: "40px 20px",
+				}}
+			>
+				<h2
+					style={{
+						marginBottom: "24px",
+						letterSpacing: "1px",
+						color: "#ff0000", // 🔴 Thêm màu đỏ
+					}}
+				>
+					Chào mừng thành viên, {user.name}!
+				</h2>
+
+				<div
+					style={{
+						backgroundColor: "var(--surface-color)",
+						borderLeft: "5px solid var(--primary-color)",
+						padding: "30px",
+						borderRadius: "12px",
+						width: "100%",
+						maxWidth: "400px",
+						boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
+					}}
+				>
+					<h3
+						style={{
+							color: "var(--primary-color)",
+							marginBottom: "15px",
+							letterSpacing: "2px",
+						}}
+					>
+						DRAGONFIRE VIP CARD
+					</h3>
+					<hr style={{ borderColor: "#333", marginBottom: "20px" }} />
+
+					<p style={{ marginBottom: "12px", fontSize: "18px" }}>
+						<span style={{ color: "var(--text-secondary)" }}>Hạng thẻ: </span>
+						<span
+							style={{
+								color: "var(--accent-color)",
+								fontWeight: "bold",
+								textTransform: "uppercase",
+							}}
+						>
+							{user.rank || "THANH VIEN"}
+						</span>
+					</p>
+
+					<p style={{ marginBottom: "12px", fontSize: "18px" }}>
+						<span style={{ color: "var(--text-secondary)" }}>
+							Điểm tích lũy:
+						</span>
+						<span style={{ color: "#4CAF50", fontWeight: "bold" }}>
+							{user.points || 0} điểm
+						</span>
+					</p>
+
+					<p style={{ fontSize: "14px", color: "var(--text-secondary)" }}>
+						<span>Email: </span> {user.email}
+					</p>
+				</div>
+
+				<button
+					onClick={() => {
+						authService.logout();
+						window.location.href = "/login";
+					}}
+					style={{ marginTop: "24px", width: "100%", maxWidth: "400px" }}
+				>
+					Đăng xuất tài khoản
+				</button>
+			</div>
+
+			<Footer />
+		</div>
+	);
+};
+
+export default Home;
+=== client/src/pages/auth/Login.js ===
+// client/src/pages/auth/Login.js
+import React, { useState } from "react";
+import authService from "../../services/authService";
+import Header from "../Header";
+import Footer from "../Footer";
+
+const Login = () => {
+	const [email, setEmail] = useState("");
+	const [password, setPassword] = useState("");
+	const [loading, setLoading] = useState(false);
+	const [error, setError] = useState("");
+
+	const handleLogin = async (e) => {
+		e.preventDefault();
+		setError("");
+		setLoading(true);
+
+		try {
+			const data = await authService.login(email, password);
+
+			// ✅ Kiểm tra đúng cấu trúc response
+			if (data.success) {
+				window.location.href = "/home";
+			} else {
+				setError(data.message || "Đăng nhập thất bại!");
+			}
+		} catch (err) {
+			console.error("Login error:", err);
+			const message =
+				err.response?.data?.message || "Không thể kết nối đến server!";
+			setError(message);
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	return (
+		<div
+			style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}
+		>
+			<Header />
+			<div
+				style={{
+					flex: 1,
+					display: "flex",
+					alignItems: "center",
+					justifyContent: "center",
+					padding: "40px 20px",
+				}}
+			>
+				<div
+					style={{
+						backgroundColor: "var(--surface-color)",
+						padding: "40px",
+						borderRadius: "12px",
+						width: "100%",
+						maxWidth: "400px",
+					}}
+				>
+					<h2 style={{ textAlign: "center", marginBottom: "30px" }}>
+						ĐĂNG NHẬP
+					</h2>
+
+					{error && (
+						<div
+							style={{
+								backgroundColor: "#ff4444",
+								color: "white",
+								padding: "10px",
+								borderRadius: "5px",
+								marginBottom: "20px",
+								textAlign: "center",
+							}}
+						>
+							{error}
+						</div>
+					)}
+
+					<form onSubmit={handleLogin}>
+						<div style={{ marginBottom: "15px" }}>
+							<label>Email</label>
+							<input
+								type="email"
+								value={email}
+								onChange={(e) => setEmail(e.target.value)}
+								placeholder="Nhập email"
+								required
+								style={{ width: "100%", padding: "10px", marginTop: "5px" }}
+							/>
+						</div>
+
+						<div style={{ marginBottom: "20px" }}>
+							<label>Mật khẩu</label>
+							<input
+								type="password"
+								value={password}
+								onChange={(e) => setPassword(e.target.value)}
+								placeholder="Nhập mật khẩu"
+								required
+								style={{ width: "100%", padding: "10px", marginTop: "5px" }}
+							/>
+						</div>
+
+						<button
+							type="submit"
+							disabled={loading}
+							style={{ width: "100%", padding: "12px" }}
+						>
+							{loading ? "ĐANG XỬ LÝ..." : "ĐĂNG NHẬP"}
+						</button>
+					</form>
+
+					<p style={{ textAlign: "center", marginTop: "20px" }}>
+						Chưa có tài khoản? <a href="/register">Đăng ký ngay</a>
+					</p>
+				</div>
+			</div>
+			<Footer />
+		</div>
+	);
+};
+
+export default Login;
+=== client/src/pages/auth/Register.js ===
+import React, { useState } from "react";
+import authService from "../../services/authService";
+import Header from "../Header";
+import Footer from "../Footer";
+
+const Register = () => {
+	const [name, setName] = useState("");
+	const [email, setEmail] = useState("");
+	const [password, setPassword] = useState("");
+	const [confirmPassword, setConfirmPassword] = useState("");
+	const [loading, setLoading] = useState(false);
+
+	const handleRegister = async (e) => {
+		e.preventDefault();
+
+		if (!name || !email || !password) {
+			alert("Vui lòng nhập đầy đủ thông tin!");
+			return;
+		}
+
+		if (password !== confirmPassword) {
+			alert("Mật khẩu xác nhận không khớp!");
+			return;
+		}
+
+		if (password.length < 6) {
+			alert("Mật khẩu phải có ít nhất 6 ký tự!");
+			return;
+		}
+
+		setLoading(true);
+
+		try {
+			const data = await authService.register(name, email, password);
+			if (data.success) {
+				alert("Đăng ký thành công! Vui lòng đăng nhập.");
+				window.location.href = "/login";
+			}
+		} catch (err) {
+			const message = err.response?.data?.message || "Đăng ký thất bại!";
+			alert(message);
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	return (
+		<div
+			style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}
+		>
+			<Header />
+
+			<div
+				style={{
+					flex: 1,
+					display: "flex",
+					alignItems: "center",
+					justifyContent: "center",
+					padding: "40px 20px",
+				}}
+			>
+				<div
+					style={{
+						backgroundColor: "var(--surface-color)",
+						padding: "40px",
+						borderRadius: "12px",
+						width: "100%",
+						maxWidth: "400px",
+						boxShadow: "0 8px 32px rgba(0,0,0,0.6)",
+						border: "1px solid #2a2a2a",
+					}}
+				>
+					<h2
+						style={{
+							textAlign: "center",
+							marginBottom: "30px",
+							letterSpacing: "1px",
+						}}
+					>
+						ĐĂNG KÝ
+					</h2>
+
+					<form
+						onSubmit={handleRegister}
+						style={{ display: "flex", flexDirection: "column", gap: "20px" }}
+					>
+						<div
+							style={{ display: "flex", flexDirection: "column", gap: "8px" }}
+						>
+							<label
+								style={{ fontSize: "14px", color: "var(--text-secondary)" }}
+							>
+								Họ và tên
+							</label>
+							<input
+								type="text"
+								placeholder="Nhập họ và tên"
+								value={name}
+								onChange={(e) => setName(e.target.value)}
+								required
+								style={{ width: "100%" }}
+							/>
+						</div>
+
+						<div
+							style={{ display: "flex", flexDirection: "column", gap: "8px" }}
+						>
+							<label
+								style={{ fontSize: "14px", color: "var(--text-secondary)" }}
+							>
+								Email
+							</label>
+							<input
+								type="email"
+								placeholder="Nhập địa chỉ email"
+								value={email}
+								onChange={(e) => setEmail(e.target.value)}
+								required
+								style={{ width: "100%" }}
+							/>
+						</div>
+
+						<div
+							style={{ display: "flex", flexDirection: "column", gap: "8px" }}
+						>
+							<label
+								style={{ fontSize: "14px", color: "var(--text-secondary)" }}
+							>
+								Mật khẩu
+							</label>
+							<input
+								type="password"
+								placeholder="Nhập mật khẩu"
+								value={password}
+								onChange={(e) => setPassword(e.target.value)}
+								required
+								style={{ width: "100%" }}
+							/>
+						</div>
+
+						<div
+							style={{ display: "flex", flexDirection: "column", gap: "8px" }}
+						>
+							<label
+								style={{ fontSize: "14px", color: "var(--text-secondary)" }}
+							>
+								Xác nhận mật khẩu
+							</label>
+							<input
+								type="password"
+								placeholder="Nhập lại mật khẩu"
+								value={confirmPassword}
+								onChange={(e) => setConfirmPassword(e.target.value)}
+								required
+								style={{ width: "100%" }}
+							/>
+						</div>
+
+						<button
+							type="submit"
+							style={{ marginTop: "10px", width: "100%" }}
+							disabled={loading}
+						>
+							{loading ? "Đang xử lý..." : "Đăng Ký"}
+						</button>
+					</form>
+
+					<p
+						style={{
+							textAlign: "center",
+							marginTop: "24px",
+							color: "var(--text-secondary)",
+							fontSize: "14px",
+						}}
+					>
+						Đã có tài khoản? <a href="/login">Đăng nhập ngay</a>
+					</p>
+				</div>
+			</div>
+
+			<Footer />
+		</div>
+	);
+};
+
+export default Register;
+=== client/src/pages/Footer.js ===
+// client/src/pages/Footer.js
+import React from "react";
+
+const Footer = () => {
+	return (
+		<footer
+			style={{
+				backgroundColor: "var(--surface-color)",
+				color: "var(--text-secondary)",
+				textAlign: "center",
+				padding: "20px",
+				fontSize: "14px",
+				borderTop: "1px solid #222",
+				marginTop: "auto",
+			}}
+		>
+			<p>
+				<span style={{ color: "#ff0000", fontWeight: "bold" }}>
+					DRAGONFIRE CINEMA
+				</span>
+				{" © "}
+				{new Date().getFullYear()} - Công nghệ Phần mềm
+			</p>
+			<p style={{ marginTop: "5px", fontSize: "12px", opacity: 0.6 }}>
+				Phát triển bởi Nhóm 8 - Công nghệ Phần mềm
+			</p>
+		</footer>
+	);
+};
+
+export default Footer;
+=== client/src/pages/Header.js ===
+// client/src/pages/Header.js
+import React from "react";
+
+const Header = () => {
+	const userStr = localStorage.getItem("user");
+	const user = userStr ? JSON.parse(userStr) : null;
+
+	const handleLogout = () => {
+		if (window.confirm("Bạn có chắc muốn đăng xuất?")) {
+			localStorage.removeItem("token");
+			localStorage.removeItem("user");
+			window.location.href = "/login";
+		}
+	};
+
+	return (
+		<header
+			style={{
+				backgroundColor: "var(--surface-color)",
+				borderBottom: "2px solid var(--primary-color)",
+				padding: "15px 40px",
+				display: "flex",
+				justifyContent: "space-between",
+				alignItems: "center",
+			}}
+		>
+			<h1
+				style={{
+					cursor: "pointer",
+					color: "#ff0000", // 🔴 THÊM: Màu đỏ cho logo
+					margin: 0,
+					fontSize: "24px",
+					letterSpacing: "1px",
+				}}
+				onClick={() => (window.location.href = "/")}
+			>
+				DRAGONFIRE CINEMA
+			</h1>
+
+			<nav style={{ display: "flex", gap: "25px", alignItems: "center" }}>
+				<a
+					href="/movies"
+					style={{ textDecoration: "none", color: "var(--text-primary)" }}
+				>
+					Lịch Chiếu
+				</a>
+				<a
+					href="/showtimes"
+					style={{ textDecoration: "none", color: "var(--text-primary)" }}
+				>
+					Suất Chiếu
+				</a>
+				<a
+					href="/products"
+					style={{ textDecoration: "none", color: "var(--text-primary)" }}
+				>
+					Bắp Nước
+				</a>
+
+				{user ? (
+					<>
+						<span>Xin chào, {user.name}</span>
+						<span style={{ color: "#FFD700" }}>{user.points || 0} điểm</span>
+						<button onClick={handleLogout}>Đăng xuất</button>
+					</>
+				) : (
+					<a href="/login" style={{ color: "var(--primary-color)" }}>
+						Đăng nhập
+					</a>
+				)}
+			</nav>
+		</header>
+	);
+};
+
+export default Header;
+=== client/src/reportWebVitals.js ===
+const reportWebVitals = onPerfEntry => {
+  if (onPerfEntry && onPerfEntry instanceof Function) {
+    import('web-vitals').then(({ getCLS, getFID, getFCP, getLCP, getTTFB }) => {
+      getCLS(onPerfEntry);
+      getFID(onPerfEntry);
+      getFCP(onPerfEntry);
+      getLCP(onPerfEntry);
+      getTTFB(onPerfEntry);
+    });
+  }
+};
+
+export default reportWebVitals;
+=== client/src/services/authService.js ===
+import axios from "axios";
+
+const API_URL = "http://localhost:5000/api/auth";
+
+const authService = {
+	// 1. Đăng ký
+	register: async (name, email, password) => {
+		try {
+			const response = await axios.post(`${API_URL}/register`, {
+				name,
+				email,
+				password,
+			});
+			console.log("Register response:", response.data);
+			return response.data;
+		} catch (error) {
+			console.error("Register error:", error);
+			throw error;
+		}
+	},
+
+	// 2. Đăng nhập
+	login: async (email, password) => {
+		try {
+			const response = await axios.post(`${API_URL}/login`, {
+				email,
+				password,
+			});
+
+			console.log("Login response:", response.data);
+
+			// ✅ SỬA: Backend trả về token trong data.token
+			if (response.data.success && response.data.data?.token) {
+				// Lưu token
+				localStorage.setItem("token", response.data.data.token);
+				// ✅ THÊM: Lưu thông tin user
+				localStorage.setItem("user", JSON.stringify(response.data.data.user));
+			}
+
+			return response.data;
+		} catch (error) {
+			console.error("Login error:", error);
+			throw error;
+		}
+	},
+
+	// 3. Lấy thông tin cá nhân
+	getProfile: async () => {
+		const token = localStorage.getItem("token");
+
+		// ✅ SỬA: Không trả về null, mà throw error hoặc trả về object rõ
+		if (!token) {
+			return { success: false, message: "Chưa đăng nhập" };
+		}
+
+		try {
+			const response = await axios.get(`${API_URL}/profile`, {
+				headers: { Authorization: `Bearer ${token}` },
+			});
+			return response.data;
+		} catch (error) {
+			console.error("GetProfile error:", error);
+			throw error;
+		}
+	},
+
+	// 4. Đăng xuất
+	logout: () => {
+		localStorage.removeItem("token");
+		localStorage.removeItem("user"); // ✅ THÊM: Xóa cả user
+		window.location.href = "/login"; // ✅ THÊM: Chuyển về login
+	},
+
+	// 5. Lấy thông tin user từ localStorage (dùng cho Header)
+	getCurrentUser: () => {
+		const userStr = localStorage.getItem("user");
+		if (userStr) {
+			return JSON.parse(userStr);
+		}
+		return null;
+	},
+
+	// 6. Lấy token
+	getToken: () => {
+		return localStorage.getItem("token");
+	},
+};
+
+export default authService;
+=== client/src/setupTests.js ===
+// jest-dom adds custom jest matchers for asserting on DOM nodes.
+// allows you to do things like:
+// expect(element).toHaveTextContent(/react/i)
+// learn more: https://github.com/testing-library/jest-dom
+import '@testing-library/jest-dom';

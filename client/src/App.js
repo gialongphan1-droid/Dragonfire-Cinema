@@ -1,20 +1,39 @@
 import React from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import Home from "./pages/auth/Home";
 
-function App() {
-	// Lấy đường dẫn url hiện tại của trình duyệt để fake router đơn giản
-	const path = window.location.pathname;
+const PrivateRoute = ({ children }) => {
+	const token = localStorage.getItem("token");
+	return token ? children : <Navigate to="/login" />;
+};
 
-	if (path === "/register") {
-		return <Register />;
-	}
-	if (path === "/home") {
-		return <Home />;
-	}
-	// Mặc định tất cả các đường dẫn khác đều hiển thị trang Login
-	return <Login />;
+function App() {
+	return (
+		<BrowserRouter>
+			<Routes>
+				<Route path="/login" element={<Login />} />
+				<Route path="/register" element={<Register />} />
+				<Route
+					path="/home"
+					element={
+						<PrivateRoute>
+							<Home />
+						</PrivateRoute>
+					}
+				/>
+				<Route
+					path="/"
+					element={
+						<PrivateRoute>
+							<Home />
+						</PrivateRoute>
+					}
+				/>
+			</Routes>
+		</BrowserRouter>
+	);
 }
 
 export default App;

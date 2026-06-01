@@ -1,76 +1,574 @@
+/* client/src/index.css - CSS toàn cục cho dự án */
+
 :root {
-	--primary-color: #d32f2f;
-	--accent-color: #ff9100;
-	--bg-color: #121212;
-	--surface-color: #1e1e1e;
-	--text-primary: #ffffff;
-	--text-secondary: #a0a0a0;
+    --primary-color: #e50914;
+    --primary-dark: #b20710;
+    --bg-color: #141414;
+    --surface-color: #1f1f1f;
+    --text-primary: #ffffff;
+    --text-secondary: #b3b3b3;
+    --accent-color: #ffd700;
+    --error-color: #ff4444;
+    --success-color: #4caf50;
+    --warning-color: #ff9800;
 }
 
 * {
-	box-sizing: border-box;
-	margin: 0;
-	padding: 0;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
 body {
-	background-color: var(--bg-color);
-	color: var(--text-primary);
-	font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-	-webkit-font-smoothing: antialiased;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+        'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: var(--bg-color);
+    color: var(--text-primary);
 }
 
-/* Hiệu ứng chuyển động mượt mà cho toàn trang */
-a,
-button,
-input {
-	transition: all 0.25s ease-in-out;
-}
-
-/* Thẻ liên kết dùng chung */
 a {
-	color: var(--accent-color);
-	text-decoration: none;
-	font-weight: bold;
+    color: var(--accent-color);
+    text-decoration: none;
+    font-weight: bold;
 }
 
 a:hover {
-	text-decoration: underline;
-	color: var(--primary-color);
+    text-decoration: underline;
+    color: var(--primary-color);
 }
 
-/* Ô nhập liệu dùng chung */
 input {
-	background-color: #2a2a2a;
-	color: var(--text-primary);
-	border: 1px solid #444;
-	padding: 12px 14px;
-	border-radius: 6px;
-	outline: none;
-	font-size: 16px;
+    background-color: #2a2a2a;
+    color: var(--text-primary);
+    border: 1px solid #444;
+    padding: 12px;
+    border-radius: 5px;
+    width: 100%;
 }
 
 input:focus {
-	border-color: var(--primary-color);
-	box-shadow: 0 0 8px rgba(211, 47, 47, 0.4);
+    outline: none;
+    border-color: var(--primary-color);
 }
 
-/* Nút bấm dùng chung */
 button {
-	background-color: var(--primary-color);
-	color: var(--text-primary);
-	border: none;
-	padding: 12px 20px;
-	font-weight: bold;
-	border-radius: 6px;
-	cursor: pointer;
-	font-size: 16px;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
 }
 
-button:hover {
-	background-color: var(--accent-color);
+button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
-button:active {
-	transform: scale(0.98);
+/* ============================================ */
+/* HEADER & FOOTER */
+/* ============================================ */
+
+.header {
+    background-color: var(--surface-color);
+    border-bottom: 2px solid var(--primary-color);
+    padding: 15px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.logo {
+    cursor: pointer;
+    color: #ff0000;
+    margin: 0;
+    font-size: 24px;
+    letter-spacing: 1px;
+}
+
+.nav {
+    display: flex;
+    gap: 25px;
+    align-items: center;
+}
+
+.nav-link {
+    text-decoration: none;
+    color: var(--text-primary);
+}
+
+.nav-link:hover {
+    color: var(--primary-color);
+}
+
+.user-info {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.user-name {
+    color: var(--primary-color);
+}
+
+.user-points {
+    color: var(--accent-color);
+    font-size: 14px;
+}
+
+.logout-btn {
+    background-color: transparent;
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+    padding: 5px 15px;
+    font-size: 14px;
+}
+
+.logout-btn:hover {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.login-link {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+.footer {
+    background-color: var(--surface-color);
+    color: var(--text-secondary);
+    text-align: center;
+    padding: 20px;
+    border-top: 1px solid #222;
+    margin-top: auto;
+}
+
+.footer-logo {
+    color: #ff0000;
+    font-weight: bold;
+}
+
+.footer-text {
+    margin-top: 5px;
+    font-size: 12px;
+    opacity: 0.6;
+}
+
+/* ============================================ */
+/* AUTH MODULE - Login, Register, Home */
+/* ============================================ */
+
+.login-container, .register-container, .home-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.login-main, .register-main, .home-main {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+}
+
+.login-card, .register-card {
+    background-color: var(--surface-color);
+    padding: 40px;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+    border: 1px solid #2a2a2a;
+}
+
+.login-title, .register-title {
+    text-align: center;
+    margin-bottom: 30px;
+    color: var(--primary-color);
+}
+
+.login-form, .register-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.login-btn, .register-btn {
+    background-color: var(--primary-color);
+    color: white;
+    width: 100%;
+}
+
+.login-btn:hover, .register-btn:hover {
+    background-color: var(--primary-dark);
+}
+
+.register-link, .login-link {
+    text-align: center;
+    margin-top: 24px;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.register-link a, .login-link a {
+    color: var(--primary-color);
+}
+
+.welcome-title {
+    margin-bottom: 24px;
+    color: #ff0000;
+}
+
+.vip-card {
+    background-color: var(--surface-color);
+    border-left: 5px solid var(--primary-color);
+    padding: 30px;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.vip-card-title {
+    color: var(--primary-color);
+    margin-bottom: 15px;
+}
+
+.vip-card-divider {
+    border-color: #333;
+    margin-bottom: 20px;
+}
+
+.vip-card-row {
+    margin-bottom: 12px;
+    font-size: 18px;
+}
+
+.vip-card-label {
+    color: var(--text-secondary);
+}
+
+.vip-card-rank {
+    color: var(--accent-color);
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.vip-card-points {
+    color: var(--success-color);
+    font-weight: bold;
+}
+
+.vip-card-email {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.logout-home-btn {
+    background-color: var(--primary-color);
+    color: white;
+    margin-top: 24px;
+    width: 100%;
+    max-width: 400px;
+}
+
+.logout-home-btn:hover {
+    background-color: var(--primary-dark);
+}
+
+/* ============================================ */
+/* COMMON CLASSES */
+/* ============================================ */
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.form-control {
+    width: 100%;
+    padding: 12px;
+    background-color: #333;
+    border: 1px solid #444;
+    border-radius: 5px;
+    color: white;
+    font-size: 16px;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.error-message {
+    background-color: var(--error-color);
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.loading {
+    padding: 40px;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+/* ============================================ */
+/* MOVIE MODULE - Lê Long */
+/* ============================================ */
+
+.movie-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 25px;
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.movie-card {
+    background-color: var(--surface-color);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: transform 0.3s;
+    cursor: pointer;
+}
+
+.movie-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+}
+
+.movie-poster {
+    width: 100%;
+    height: 280px;
+    object-fit: cover;
+    background-color: #333;
+}
+
+.movie-info {
+    padding: 15px;
+}
+
+.movie-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.movie-duration {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+/* ============================================ */
+/* SHOWTIME MODULE - Hoàng */
+/* ============================================ */
+
+.showtime-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.showtime-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background-color: var(--surface-color);
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.showtime-time {
+    font-size: 18px;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+/* ============================================ */
+/* BOOKING MODULE - Hiếu */
+/* ============================================ */
+
+.seat-map {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 30px 0;
+}
+
+.screen {
+    width: 80%;
+    height: 30px;
+    background-color: #333;
+    text-align: center;
+    line-height: 30px;
+    margin-bottom: 40px;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.seat-row {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.seat {
+    width: 35px;
+    height: 35px;
+    background-color: #444;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+}
+
+.seat.available {
+    background-color: #4caf50;
+}
+
+.seat.selected {
+    background-color: var(--primary-color);
+}
+
+.seat.booked {
+    background-color: #666;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* ============================================ */
+/* PRODUCT MODULE - Kỷ */
+/* ============================================ */
+
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 25px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.product-card {
+    background-color: var(--surface-color);
+    border-radius: 10px;
+    overflow: hidden;
+    text-align: center;
+    padding: 20px;
+}
+
+.product-price {
+    font-size: 22px;
+    font-weight: bold;
+    color: var(--primary-color);
+    margin: 15px 0;
+}
+
+/* ============================================ */
+/* PAYMENT MODULE - Đạt */
+/* ============================================ */
+
+.payment-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.payment-methods {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.payment-method {
+    background-color: var(--surface-color);
+    border: 2px solid transparent;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+}
+
+.payment-method.selected {
+    border-color: var(--primary-color);
+}
+
+.payment-summary {
+    background-color: var(--surface-color);
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px 0;
+}
+
+.payment-total {
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--primary-color);
+    text-align: right;
+}
+
+/* ============================================ */
+/* RESPONSIVE */
+/* ============================================ */
+
+@media (max-width: 768px) {
+    .header {
+        padding: 15px 20px;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .nav {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 15px;
+    }
+
+    .login-card, .register-card {
+        padding: 20px;
+    }
+
+    .movie-grid, .product-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 15px;
+    }
+
+    .movie-poster {
+        height: 200px;
+    }
+
+    .seat {
+        width: 28px;
+        height: 28px;
+        font-size: 10px;
+    }
+
+    .seat-row {
+        gap: 5px;
+    }
+
+    .payment-methods {
+        grid-template-columns: 1fr;
+    }
 }

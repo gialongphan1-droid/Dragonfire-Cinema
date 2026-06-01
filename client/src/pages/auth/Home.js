@@ -4,121 +4,81 @@ import Header from "../Header";
 import Footer from "../Footer";
 
 const Home = () => {
-	const [user, setUser] = useState(null);
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
 
-	useEffect(() => {
-		const loadProfile = async () => {
-			try {
-				const data = await authService.getProfile();
-				if (data && data.success) {
-					setUser(data.user);
-				} else {
-					window.location.href = "/login";
-				}
-			} catch (err) {
-				authService.logout();
-				window.location.href = "/login";
-			}
-		};
-		loadProfile();
-	}, []);
+    useEffect(() => {
+        const loadProfile = async () => {
+            try {
+                const data = await authService.getProfile();
+                if (data && data.success) {
+                    setUser(data.data.user);
+                } else {
+                    window.location.href = "/login";
+                }
+            } catch (err) {
+                console.error("Lỗi tải profile:", err);
+                authService.logout();
+                window.location.href = "/login";
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadProfile();
+    }, []);
 
-	if (!user)
-		return (
-			<div
-				style={{
-					padding: "40px",
-					textAlign: "center",
-					color: "var(--text-secondary)",
-				}}
-			>
-				Đang tải thông tin tài khoản...
-			</div>
-		);
+    if (loading) {
+        return <div className="loading">Đang tải thông tin tài khoản...</div>;
+    }
 
-	return (
-		<div
-			style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}
-		>
-			<Header />
+    if (!user) {
+        return null;
+    }
 
-			<div
-				style={{
-					flex: 1,
-					display: "flex",
-					flexDirection: "column",
-					alignItems: "center",
-					justifyContent: "center",
-					padding: "40px 20px",
-				}}
-			>
-				<h2 style={{ marginBottom: "24px", letterSpacing: "1px" }}>
-					Chào mừng thành viên, {user.name}!
-				</h2>
+    return (
+        <div className="home-container">
+            <Header />
+            <main className="home-main">
+                <h2 className="welcome-title">
+                    Chào mừng thành viên, {user.name}!
+                </h2>
 
-				<div
-					style={{
-						backgroundColor: "var(--surface-color)",
-						borderLeft: "5px solid var(--primary-color)",
-						padding: "30px",
-						borderRadius: "12px",
-						width: "100%",
-						maxWidth: "400px",
-						boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
-					}}
-				>
-					<h3
-						style={{
-							color: "var(--primary-color)",
-							marginBottom: "15px",
-							letterSpacing: "2px",
-						}}
-					>
-						DRAGONFIRE VIP CARD
-					</h3>
-					<hr style={{ borderColor: "#333", marginBottom: "20px" }} />
+                <div className="vip-card">
+                    <h3 className="vip-card-title">DRAGONFIRE VIP CARD</h3>
+                    <hr className="vip-card-divider" />
 
-					<p style={{ marginBottom: "12px", fontSize: "18px" }}>
-						<span style={{ color: "var(--text-secondary)" }}>Hạng thẻ: </span>
-						<span
-							style={{
-								color: "var(--accent-color)",
-								fontWeight: "bold",
-								textTransform: "uppercase",
-							}}
-						>
-							{user.rank}
-						</span>
-					</p>
+                    <p className="vip-card-row">
+                        <span className="vip-card-label">Hạng thẻ: </span>
+                        <span className="vip-card-rank">
+                            {user.rank || "THÀNH VIÊN"}
+                        </span>
+                    </p>
 
-					<p style={{ marginBottom: "12px", fontSize: "18px" }}>
-						<span style={{ color: "var(--text-secondary)" }}>
-							Điểm tích lũy:{" "}
-						</span>
-						<span style={{ color: "#4CAF50", fontWeight: "bold" }}>
-							{user.points} P
-						</span>
-					</p>
+                    <p className="vip-card-row">
+                        <span className="vip-card-label">Điểm tích lũy: </span>
+                        <span className="vip-card-points">
+                            {user.points || 0} điểm
+                        </span>
+                    </p>
 
-					<p style={{ fontSize: "14px", color: "var(--text-secondary)" }}>
-						<span>Email: </span> {user.email}
-					</p>
-				</div>
+                    <p className="vip-card-email">
+                        <span>Email: </span> {user.email}
+                    </p>
+                </div>
 
-				<button
-					onClick={() => {
-						authService.logout();
-						window.location.href = "/login";
-					}}
-					style={{ marginTop: "24px", width: "100%", maxWidth: "400px" }}
-				>
-					Đăng xuất tài khoản
-				</button>
-			</div>
-
-			<Footer />
-		</div>
-	);
+                <button
+                    className="logout-home-btn"
+                    onClick={() => {
+                        authService.logout();
+                        window.location.href = "/login";
+                    }}
+                >
+                    Đăng xuất tài khoản
+                </button>
+            </main>
+            <Footer />
+        </div>
+    );
 };
 
 export default Home;

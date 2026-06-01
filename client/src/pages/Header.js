@@ -1,36 +1,47 @@
 import React from "react";
 
 const Header = () => {
+	const userStr = localStorage.getItem("user");
+	const user = userStr ? JSON.parse(userStr) : null;
+
+	const handleLogout = () => {
+		if (window.confirm("Bạn có chắc muốn đăng xuất?")) {
+			localStorage.removeItem("token");
+			localStorage.removeItem("user");
+			window.location.href = "/login";
+		}
+	};
+
 	return (
-		<header
-			style={{
-				backgroundColor: "var(--surface-color)",
-				borderBottom: "2px solid var(--primary-color)",
-				padding: "15px 40px",
-				display: "flex",
-				justifyContent: "space-between",
-				alignItems: "center",
-				boxShadow: "0 4px 10px rgba(0,0,0,0.3)",
-			}}
-		>
-			<h1
-				style={{
-					color: "var(--primary-color)",
-					margin: 0,
-					fontSize: "24px",
-					letterSpacing: "1px",
-					cursor: "pointer",
-				}}
-				onClick={() => (window.location.href = "/")}
-			>
+		<header className="header">
+			<h1 className="logo" onClick={() => (window.location.href = "/")}>
 				DRAGONFIRE CINEMA
 			</h1>
-			<nav style={{ display: "flex", gap: "20px" }}>
-				<a href="/movies">Lịch Chiếu</a>
-				<a href="/products">Bắp Nước</a>
-				<a href="/login" style={{ color: "var(--primary-color)" }}>
-					Thành Viên
+
+			<nav className="nav">
+				<a href="/movies" className="nav-link">
+					Lịch Chiếu
 				</a>
+				<a href="/showtimes" className="nav-link">
+					Suất Chiếu
+				</a>
+				<a href="/products" className="nav-link">
+					Bắp Nước
+				</a>
+
+				{user ? (
+					<div className="user-info">
+						<span className="user-name">Xin chào, {user.name}</span>
+						<span className="user-points">{user.points || 0} điểm</span>
+						<button className="logout-btn" onClick={handleLogout}>
+							Đăng xuất
+						</button>
+					</div>
+				) : (
+					<a href="/login" className="login-link">
+						Đăng nhập
+					</a>
+				)}
 			</nav>
 		</header>
 	);
