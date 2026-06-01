@@ -1,0 +1,76 @@
+:root {
+	--primary-color: #d32f2f;
+	--accent-color: #ff9100;
+	--bg-color: #121212;
+	--surface-color: #1e1e1e;
+	--text-primary: #ffffff;
+	--text-secondary: #a0a0a0;
+}
+
+* {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	background-color: var(--bg-color);
+	color: var(--text-primary);
+	font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+	-webkit-font-smoothing: antialiased;
+}
+
+/* Hiệu ứng chuyển động mượt mà cho toàn trang */
+a,
+button,
+input {
+	transition: all 0.25s ease-in-out;
+}
+
+/* Thẻ liên kết dùng chung */
+a {
+	color: var(--accent-color);
+	text-decoration: none;
+	font-weight: bold;
+}
+
+a:hover {
+	text-decoration: underline;
+	color: var(--primary-color);
+}
+
+/* Ô nhập liệu dùng chung */
+input {
+	background-color: #2a2a2a;
+	color: var(--text-primary);
+	border: 1px solid #444;
+	padding: 12px 14px;
+	border-radius: 6px;
+	outline: none;
+	font-size: 16px;
+}
+
+input:focus {
+	border-color: var(--primary-color);
+	box-shadow: 0 0 8px rgba(211, 47, 47, 0.4);
+}
+
+/* Nút bấm dùng chung */
+button {
+	background-color: var(--primary-color);
+	color: var(--text-primary);
+	border: none;
+	padding: 12px 20px;
+	font-weight: bold;
+	border-radius: 6px;
+	cursor: pointer;
+	font-size: 16px;
+}
+
+button:hover {
+	background-color: var(--accent-color);
+}
+
+button:active {
+	transform: scale(0.98);
+}
