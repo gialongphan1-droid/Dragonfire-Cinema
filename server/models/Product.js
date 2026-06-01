@@ -1,21 +1,51 @@
 const mongoose = require("mongoose");
 
-const ProductSchema = new mongoose.Schema(
+const productSchema = new mongoose.Schema(
 	{
-		name: { type: String, required: true },
-		categoryName: { type: String, required: true }, // Ví dụ: 'Bắp', 'Nước Ngọt', 'Combo'
-		productType: { type: String, enum: ["single", "combo"], default: "single" },
-		image: String,
-		description: String,
-		status: { type: String, enum: ["active", "inactive"], default: "active" },
-		variants: [
-			{
-				size: String, // 'S', 'M', 'L'
-				price: { type: Number, required: true },
-			},
-		],
-	},
-	{ timestamps: true },
-);
+		categoryId: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: "Category",
+			required: true
+		},
 
-module.exports = mongoose.model("Product", ProductSchema);
+		productName: {
+			type: String,
+			required: true,
+			trim: true
+		},
+
+		price: {
+			type: Number,
+			required: true
+		},
+
+		quantity: {
+			type: Number,
+			default: 0
+		},
+
+		size: {
+			type: String,
+			default: ""
+		},
+
+		image: {
+			type: String,
+			default: ""
+		},
+
+		description: {
+			type: String,
+			default: ""
+		},
+
+		status: {
+			type: Boolean,
+			default: true
+		}
+	},
+	{
+		timestamps: true
+	});
+
+module.exports = mongoose.model("Product", productSchema);
