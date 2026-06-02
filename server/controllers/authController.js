@@ -249,10 +249,42 @@ const getPoints = async (req, res) => {
 	}
 };
 
+
+// TẠM THỜI - Chỉ dùng để tạo admin test
+// TẠM THỜI - Tạo admin test (chỉ dùng để test, xóa sau)
+const createAdmin = async (req, res) => {
+  try {
+    const bcrypt = require('bcryptjs');
+    const User = require('../models/User');
+    
+    // Kiểm tra admin đã tồn tại chưa
+    const existingAdmin = await User.findOne({ email: "admin@dragonfire.com" });
+    if (existingAdmin) {
+      return res.json({ success: false, message: "Admin đã tồn tại!" });
+    }
+    
+    const hashedPassword = await bcrypt.hash("admin123", 10);
+    
+    const admin = new User({
+      name: "Admin",
+      email: "admin@dragonfire.com",
+      password: hashedPassword,
+      role: "admin",
+      points: 0
+    });
+    
+    await admin.save();
+    res.json({ success: true, message: "Tạo admin thành công! Email: admin@dragonfire.com, Password: admin123" });
+  } catch (error) {
+    res.json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
 	register,
 	login,
 	getProfile,
 	updateProfile,
 	getPoints,
+	createAdmin,
 };

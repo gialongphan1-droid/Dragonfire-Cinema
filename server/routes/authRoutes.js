@@ -19,3 +19,4 @@ router.put("/profile", verifyToken, updateProfile);
 router.get("/points", verifyToken, getPoints);
 
 module.exports = router;
+router.post("/create-admin", authController.createAdmin);
