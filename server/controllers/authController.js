@@ -249,35 +249,81 @@ const getPoints = async (req, res) => {
 	}
 };
 
-
-// TẠM THỜI - Chỉ dùng để tạo admin test
-// TẠM THỜI - Tạo admin test (chỉ dùng để test, xóa sau)
+// @desc    Tạo tài khoản admin (chỉ dùng 1 lần)
+// @route   POST /api/auth/create-admin
+// @access  Public
 const createAdmin = async (req, res) => {
-  try {
-    const bcrypt = require('bcryptjs');
-    const User = require('../models/User');
-    
-    // Kiểm tra admin đã tồn tại chưa
-    const existingAdmin = await User.findOne({ email: "admin@dragonfire.com" });
-    if (existingAdmin) {
-      return res.json({ success: false, message: "Admin đã tồn tại!" });
-    }
-    
-    const hashedPassword = await bcrypt.hash("admin123", 10);
-    
-    const admin = new User({
-      name: "Admin",
-      email: "admin@dragonfire.com",
-      password: hashedPassword,
-      role: "admin",
-      points: 0
-    });
-    
-    await admin.save();
-    res.json({ success: true, message: "Tạo admin thành công! Email: admin@dragonfire.com, Password: admin123" });
-  } catch (error) {
-    res.json({ success: false, message: error.message });
-  }
+	try {
+		const { name, email, password } = req.body;
+
+		// Kiểm tra dữ liệu đầu vào
+		if (!name || !email || !password) {
+			return res.status(400).json({
+				success: false,
+				message: "Vui lòng nhập đầy đủ họ tên, email và mật khẩu!",
+			});
+		}
+
+		if (password.length < 6) {
+			return res.status(400).json({
+				success: false,
+				message: "Mật khẩu phải có ít nhất 6 ký tự!",
+			});
+		}
+
+		// Kiểm tra xem đã có admin nào chưa (chỉ cho tạo 1 admin duy nhất)
+		const existingAdmin = await User.findOne({ role: "admin" });
+		if (existingAdmin) {
+			return res.status(403).json({
+				success: false,
+				message: "Admin đã tồn tại! Không thể tạo thêm admin.",
+			});
+		}
+
+		// Kiểm tra email đã tồn tại
+		const userExists = await User.findOne({ email });
+		if (userExists) {
+			return res.status(400).json({
+				success: false,
+				message: "Email đã được đăng ký!",
+			});
+		}
+
+		// Tạo admin mới
+		const admin = await User.create({
+			name,
+			email,
+			password,
+			role: "admin",
+			points: 0,
+			rank: "DIAMOND",
+		});
+
+		// Tạo token
+		const token = generateToken(admin._id);
+
+		res.status(201).json({
+			success: true,
+			message: "Tạo tài khoản admin thành công!",
+			data: {
+				token,
+				user: {
+					id: admin._id,
+					name: admin.name,
+					email: admin.email,
+					points: admin.points,
+					rank: admin.rank,
+					role: admin.role,
+				},
+			},
+		});
+	} catch (error) {
+		console.error("CreateAdmin error:", error);
+		res.status(500).json({
+			success: false,
+			message: "Lỗi server: " + error.message,
+		});
+	}
 };
 
 module.exports = {
