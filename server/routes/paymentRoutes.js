@@ -1,10 +1,8 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
 
-router.get("/test", (req, res) => {
-	res.json({
-		message: "Đường truyền API Thanh toán MoMo/VNPAY của ĐẠT hoạt động tốt!",
-	});
-});
+const paymentController = require('../controllers/paymentController');
+router.post('/checkout', paymentController.createPayment);
+router.put('/update-status', paymentController.updatePaymentStatus);
 
 module.exports = router;
