@@ -131,6 +131,7 @@ const login = async (req, res) => {
 					email: user.email,
 					points: user.points,
 					rank: rank,
+					role: user.role || "user",
 				},
 			},
 		});
@@ -173,7 +174,7 @@ const getProfile = async (req, res) => {
 					email: user.email,
 					points: user.points,
 					rank: rank,
-					role: user.role,
+					role: user.role || "user",
 				},
 			},
 		});
@@ -216,6 +217,7 @@ const updateProfile = async (req, res) => {
 					email: user.email,
 					points: user.points,
 					rank: user.rank,
+					role: user.role || "user",
 				},
 			},
 		});

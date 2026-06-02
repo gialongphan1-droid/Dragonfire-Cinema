@@ -1,50 +1,47 @@
 import React from "react";
+import { Link, useNavigate } from "react-router-dom";
 
 const Header = () => {
-	const userStr = localStorage.getItem("user");
-	const user = userStr ? JSON.parse(userStr) : null;
+  const navigate = useNavigate();
+  const token = localStorage.getItem("token");
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
 
-	const handleLogout = () => {
-		if (window.confirm("Bạn có chắc muốn đăng xuất?")) {
-			localStorage.removeItem("token");
-			localStorage.removeItem("user");
-			window.location.href = "/login";
-		}
-	};
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/login");
+  };
 
-	return (
-		<header className="header">
-			<h1 className="logo" onClick={() => (window.location.href = "/")}>
-				DRAGONFIRE CINEMA
-			</h1>
-
-			<nav className="nav">
-				<a href="/movies" className="nav-link">
-					Lịch Chiếu
-				</a>
-				<a href="/showtimes" className="nav-link">
-					Suất Chiếu
-				</a>
-				<a href="/products" className="nav-link">
-					Bắp Nước
-				</a>
-
-				{user ? (
-					<div className="user-info">
-						<span className="user-name">Xin chào, {user.name}</span>
-						<span className="user-points">{user.points || 0} điểm</span>
-						<button className="logout-btn" onClick={handleLogout}>
-							Đăng xuất
-						</button>
-					</div>
-				) : (
-					<a href="/login" className="login-link">
-						Đăng nhập
-					</a>
-				)}
-			</nav>
-		</header>
-	);
+  return (
+    <header className="header">
+      <h1 className="logo" onClick={() => navigate("/")}>
+        DRAGONFIRE CINEMA
+      </h1>
+      <nav className="nav">
+        <Link to="/" className="nav-link">Trang chủ</Link>
+        <Link to="/movies" className="nav-link">Phim</Link>
+        <Link to="/showtimes" className="nav-link">Suất chiếu</Link>
+        <Link to="/products" className="nav-link">Combo</Link>
+        
+        {/* Chỉ hiển thị với admin */}
+        {token && user.role === "admin" && (
+          <Link to="/admin/movies" className="nav-link" style={{ color: "#e50914" }}>
+            👑 Quản lý phim
+          </Link>
+        )}
+        
+        {token ? (
+          <div className="user-info">
+            <span className="user-name">Xin chào, {user.name || "User"}</span>
+            {user.points && <span className="user-points">⭐ {user.points} điểm</span>}
+            <button onClick={handleLogout} className="logout-btn">Đăng xuất</button>
+          </div>
+        ) : (
+          <Link to="/login" className="login-link">Đăng nhập</Link>
+        )}
+      </nav>
+    </header>
+  );
 };
 
 export default Header;

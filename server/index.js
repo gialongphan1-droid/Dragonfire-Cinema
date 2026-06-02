@@ -24,6 +24,9 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use("/api/auth", require("./routes/authRoutes"));
+// Sau các route khác
+const movieRoutes = require("./routes/movieRoutes");
+app.use("/api/movies", movieRoutes);
 
 // Test route
 app.get("/api/test", (req, res) => {

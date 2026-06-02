@@ -12,15 +12,18 @@ const MovieAdmin = () => {
     title: "",
     description: "",
     duration: "",
-    genre: [],
+    genre: "",
     director: "",
-    cast: [],
+    cast: "",
     releaseDate: "",
     poster: "",
     rating: "",
   });
 
   const token = localStorage.getItem("token");
+
+  // Lấy ngày hôm nay để set min cho input date
+  const today = new Date().toISOString().split("T")[0];
 
   useEffect(() => {
     fetchMovies();
@@ -39,8 +42,53 @@ const MovieAdmin = () => {
     }
   };
 
+  // Xử lý khi nhập thể loại (tự động thêm dấu phẩy)
+  const handleGenreChange = (e) => {
+    let value = e.target.value;
+    // Cho phép nhập chữ, số, dấu cách và dấu phẩy
+    setFormData({ ...formData, genre: value });
+  };
+
+  // Xử lý khi nhập diễn viên (tự động thêm dấu phẩy)
+  const handleCastChange = (e) => {
+    let value = e.target.value;
+    setFormData({ ...formData, cast: value });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate dữ liệu
+    if (formData.duration < 0) {
+      alert("Thời lượng phim không được là số âm!");
+      return;
+    }
+    
+    if (formData.rating < 0 || formData.rating > 10) {
+      alert("Đánh giá phải từ 0.0 đến 10.0!");
+      return;
+    }
+
+    // Xử lý genre: tách chuỗi thành array
+    const genreArray = formData.genre
+      .split(",")
+      .map(g => g.trim())
+      .filter(g => g !== "");
+    
+    // Xử lý cast: tách chuỗi thành array
+    const castArray = formData.cast
+      .split(",")
+      .map(c => c.trim())
+      .filter(c => c !== "");
+
+    const dataToSend = {
+      ...formData,
+      genre: genreArray,
+      cast: castArray,
+      duration: Number(formData.duration),
+      rating: formData.rating ? Number(formData.rating) : 0,
+    };
+
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
       let response;
@@ -48,11 +96,11 @@ const MovieAdmin = () => {
       if (editingMovie) {
         response = await axios.put(
           `${API_URL}/movies/${editingMovie._id}`,
-          formData,
+          dataToSend,
           config
         );
       } else {
-        response = await axios.post(`${API_URL}/movies/create`, formData, config);
+        response = await axios.post(`${API_URL}/movies/create`, dataToSend, config);
       }
 
       if (response.data.success) {
@@ -63,9 +111,9 @@ const MovieAdmin = () => {
           title: "",
           description: "",
           duration: "",
-          genre: [],
+          genre: "",
           director: "",
-          cast: [],
+          cast: "",
           releaseDate: "",
           poster: "",
           rating: "",
@@ -99,9 +147,9 @@ const MovieAdmin = () => {
       title: movie.title,
       description: movie.description || "",
       duration: movie.duration,
-      genre: movie.genre || [],
+      genre: movie.genre?.join(", ") || "",
       director: movie.director || "",
-      cast: movie.cast || [],
+      cast: movie.cast?.join(", ") || "",
       releaseDate: movie.releaseDate?.split("T")[0] || "",
       poster: movie.poster || "",
       rating: movie.rating || "",
@@ -220,8 +268,13 @@ const MovieAdmin = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, duration: e.target.value })
                   }
+                  min="1"
+                  step="1"
                   required
                 />
+                <small style={{ color: "var(--text-secondary)" }}>
+                  ⚠️ Không được nhập số âm
+                </small>
               </div>
 
               <div className="form-group">
@@ -229,15 +282,13 @@ const MovieAdmin = () => {
                 <input
                   type="text"
                   className="form-control"
-                  value={formData.genre.join(", ")}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      genre: e.target.value.split(",").map((g) => g.trim()).filter((g) => g),
-                    })
-                  }
-                  placeholder="Hành động, Hài, Tình cảm"
+                  value={formData.genre}
+                  onChange={handleGenreChange}
+                  placeholder="Ví dụ: Hành động, Hài, Tình cảm"
                 />
+                <small style={{ color: "var(--text-secondary)" }}>
+                  💡 Nhập các thể loại, cách nhau bằng dấu phẩy
+                </small>
               </div>
 
               <div className="form-group">
@@ -257,14 +308,13 @@ const MovieAdmin = () => {
                 <input
                   type="text"
                   className="form-control"
-                  value={formData.cast.join(", ")}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      cast: e.target.value.split(",").map((c) => c.trim()).filter((c) => c),
-                    })
-                  }
+                  value={formData.cast}
+                  onChange={handleCastChange}
+                  placeholder="Ví dụ: Ngọc Lan, Trường Giang, Hari Won"
                 />
+                <small style={{ color: "var(--text-secondary)" }}>
+                  💡 Nhập các diễn viên, cách nhau bằng dấu phẩy
+                </small>
               </div>
 
               <div className="form-group">
@@ -276,7 +326,11 @@ const MovieAdmin = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, releaseDate: e.target.value })
                   }
+                  min={today}
                 />
+                <small style={{ color: "var(--text-secondary)" }}>
+                  ⚠️ Chỉ được chọn ngày hiện tại hoặc tương lai
+                </small>
               </div>
 
               <div className="form-group">
@@ -290,19 +344,30 @@ const MovieAdmin = () => {
                   }
                   placeholder="https://example.com/poster.jpg"
                 />
+                <small style={{ color: "var(--text-secondary)" }}>
+                  💡 Dán link ảnh poster (có thể để trống)
+                </small>
               </div>
 
               <div className="form-group">
-                <label>Đánh giá (0-10)</label>
+                <label>Đánh giá (0.0 - 10.0)</label>
                 <input
                   type="number"
                   step="0.1"
+                  min="0"
+                  max="10"
                   className="form-control"
                   value={formData.rating}
-                  onChange={(e) =>
-                    setFormData({ ...formData, rating: e.target.value })
-                  }
+                  onChange={(e) => {
+                    let value = parseFloat(e.target.value);
+                    if (value < 0) value = 0;
+                    if (value > 10) value = 10;
+                    setFormData({ ...formData, rating: value });
+                  }}
                 />
+                <small style={{ color: "var(--text-secondary)" }}>
+                  ⚠️ Chỉ từ 0.0 đến 10.0, không được nhập số âm
+                </small>
               </div>
 
               <div className="modal-actions">
