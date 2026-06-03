@@ -1,20 +1,15 @@
 import React from "react";
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
-import Login from "./pages/auth/Login";
-import Register from "./pages/auth/Register";
-import Home from "./pages/auth/Home";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Header from "./pages/Header";
 import Footer from "./pages/Footer";
-
-import ShowTimeList from "./pages/showtime/ShowTimeList";
-import ShowTimeForm from "./pages/showtime/ShowTimeForm";
-import ShowTimeDetails from "./pages/showtime/ShowTimeDetails";
-import LichChieu from "./pages/showtime/LichChieu";  // ← THÊM DÒNG NÀY
-
-const PrivateRoute = ({ children }) => {
-	const token = localStorage.getItem("token");
-	return token ? children : <Navigate to="/login" />;
-};
+import Home from "./pages/Home";
+import Login from "./pages/auth/Login";
+import Register from "./pages/auth/Register";
+import MovieList from "./pages/movie/MovieList";
+import MovieDetail from "./pages/movie/MovieDetail";
+import MovieAdmin from "./pages/movie/MovieAdmin";
+import PrivateRoute from "./components/PrivateRoute";
+import "./App.css";
 
 // Tạo component con để dùng useLocation
 function AppContent() {
@@ -48,11 +43,29 @@ function AppContent() {
 }
 
 function App() {
-	return (
-		<BrowserRouter>
-			<AppContent />
-		</BrowserRouter>
-	);
+  return (
+    <Router>
+      <Header />
+      <main style={{ minHeight: "calc(100vh - 200px)" }}>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/movies" element={<MovieList />} />
+          <Route path="/movies/:id" element={<MovieDetail />} />
+          <Route
+            path="/admin/movies"
+            element={
+              <PrivateRoute adminOnly={true}>
+                <MovieAdmin />
+              </PrivateRoute>
+            }
+          />
+        </Routes>
+      </main>
+      <Footer />
+    </Router>
+  );
 }
 
 export default App;
