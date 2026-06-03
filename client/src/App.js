@@ -9,6 +9,10 @@ import MovieList from "./pages/movie/MovieList";
 import MovieDetail from "./pages/movie/MovieDetail";
 import MovieAdmin from "./pages/movie/MovieAdmin";
 import PrivateRoute from "./components/PrivateRoute";
+import ShowtimeAdmin from "./pages/showtime/ShowtimeAdmin";
+import ShowtimeList from "./pages/showtime/ShowtimeList";
+import Booking from "./pages/booking/Booking";
+
 import "./App.css";
 
 function App() {
@@ -22,6 +26,9 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/movies" element={<MovieList />} />
           <Route path="/movies/:id" element={<MovieDetail />} />
+		  <Route path="/showtimes" element={<ShowtimeList />} />
+		  <Route path="/booking" element={<Booking />} />
+
           <Route
             path="/admin/movies"
             element={
@@ -30,6 +37,15 @@ function App() {
               </PrivateRoute>
             }
           />
+		  <Route
+  path="/admin/showtimes"
+  element={
+    <PrivateRoute adminOnly={true}>
+      <ShowtimeAdmin />
+    </PrivateRoute>
+  }
+/>
+
         </Routes>
       </main>
       <Footer />
