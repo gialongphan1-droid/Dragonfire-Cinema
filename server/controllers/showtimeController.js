@@ -1,10 +1,10 @@
 const Showtime = require("../models/Showtime");
 const Movie = require("../models/Movie");
-
+const Room = require("../models/Room"); // ← THÊM DÒNG NÀY
 
 exports.getAllShowtimes = async (req, res) => {
 	try {
-		const data = await Showtime.find().populate("movieId");
+		const data = await Showtime.find().populate("movieId").populate("roomId");
 
 		res.status(200).json({
 			success: true,
@@ -23,13 +23,24 @@ exports.createShowtime = async (req, res) => {
 		const {
 			movieId,
 			cinemaName,
-			roomName,
+			roomId,        // ← ĐỔI roomName THÀNH roomId
 			startTime,
 			price,
 		} = req.body;
 
-		const movie = await Movie.findById(movieId);
+		// Debug log
+		console.log("📦 Received:", { movieId, cinemaName, roomId, startTime, price });
 
+		// Kiểm tra dữ liệu đầu vào
+		if (!movieId || !cinemaName || !roomId || !startTime || !price) {
+			return res.status(400).json({
+				success: false,
+				message: "Vui lòng nhập đầy đủ thông tin"
+			});
+		}
+
+		// Lấy thông tin phim
+		const movie = await Movie.findById(movieId);
 		if (!movie) {
 			return res.status(404).json({
 				success: false,
@@ -37,18 +48,32 @@ exports.createShowtime = async (req, res) => {
 			});
 		}
 
+		// Lấy thông tin phòng
+		const room = await Room.findById(roomId);
+		if (!room) {
+			return res.status(404).json({
+				success: false,
+				message: "Không tìm thấy phòng chiếu",
+			});
+		}
+
+		// Tính endTime
 		const endTime = new Date(
 			new Date(startTime).getTime() +
 				movie.duration * 60000
 		);
 
+		// Tạo seats dựa trên số hàng và cột của phòng
 		const seats = [];
+		const rows = room.rows || 5;
+		const cols = room.columns || 10;
+		const rowLetters = ["A", "B", "C", "D", "E", "F", "G", "H"];
 
-		for (const row of ["A", "B", "C", "D", "E"]) {
-			for (let i = 1; i <= 10; i++) {
+		for (let i = 0; i < rows; i++) {
+			for (let j = 1; j <= cols; j++) {
 				seats.push({
-					seatNumber: `${row}${i}`,
-					seatType: "Standard",
+					seatNumber: `${rowLetters[i]}${j}`,
+					seatType: room.type === "VIP" ? "VIP" : "Standard",
 					isBooked: false,
 				});
 			}
@@ -58,18 +83,22 @@ exports.createShowtime = async (req, res) => {
 			movieId,
 			movieTitle: movie.title,
 			cinemaName,
-			roomName,
+			roomId,
+			roomName: room.name,
 			startTime,
 			endTime,
 			price,
 			seats,
 		});
 
+		console.log("✅ Showtime created:", showtime._id);
+
 		res.status(201).json({
 			success: true,
 			data: showtime,
 		});
 	} catch (error) {
+		console.error("❌ Server error:", error);
 		res.status(500).json({
 			success: false,
 			message: error.message,
@@ -80,7 +109,8 @@ exports.createShowtime = async (req, res) => {
 exports.getShowtimeById = async (req, res) => {
 	try {
 		const data = await Showtime.findById(req.params.id)
-			.populate("movieId");
+			.populate("movieId")
+			.populate("roomId");
 
 		res.status(200).json({
 			success: true,
@@ -99,7 +129,7 @@ exports.updateShowtime = async (req, res) => {
 		const data = await Showtime.findByIdAndUpdate(
 			req.params.id,
 			req.body,
-			{ new: true }
+			{ new: true, runValidators: true }
 		);
 
 		res.status(200).json({
@@ -129,6 +159,7 @@ exports.deleteShowtime = async (req, res) => {
 		});
 	}
 };
+
 // Lấy suất chiếu theo phim
 exports.getShowtimesByMovie = async (req, res) => {
     try {

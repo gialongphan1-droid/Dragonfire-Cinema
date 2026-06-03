@@ -17,6 +17,10 @@ import ShowTimeList from "./pages/showtime/ShowTimeList";
 import ShowTimeDetails from "./pages/showtime/ShowTimeDetails";
 import ShowTimeForm from "./pages/showtime/ShowTimeForm";
 
+// ✅ THÊM IMPORT CHO PHÒNG CHIẾU
+import RoomList from "./pages/showtime/RoomList";
+import RoomForm from "./pages/showtime/RoomForm";
+
 function App() {
   return (
     <Router>
@@ -46,6 +50,11 @@ function App() {
           <Route path="/showtimes/:id" element={<ShowTimeDetails />} />
           <Route path="/showtimes/add" element={<PrivateRoute adminOnly={true}><ShowTimeForm /></PrivateRoute>} />
           <Route path="/showtimes/edit/:id" element={<PrivateRoute adminOnly={true}><ShowTimeForm /></PrivateRoute>} />
+          
+          {/* ✅ THÊM ROOM ROUTES - Quản lý phòng chiếu */}
+          <Route path="/rooms" element={<RoomList />} />
+          <Route path="/rooms/add" element={<PrivateRoute adminOnly={true}><RoomForm /></PrivateRoute>} />
+          <Route path="/rooms/edit/:id" element={<PrivateRoute adminOnly={true}><RoomForm /></PrivateRoute>} />
         </Routes>
       </main>
       <Footer />

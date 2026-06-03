@@ -12,6 +12,9 @@ const Header = () => {
     navigate("/login");
   };
 
+  // Kiểm tra admin bằng cả 2 cách
+  const isAdmin = user?.isAdmin === true || user?.role === "admin";
+
   return (
     <header className="header">
       <h1 className="logo" onClick={() => navigate("/")}>
@@ -24,10 +27,15 @@ const Header = () => {
         <Link to="/products" className="nav-link">Combo</Link>
         
         {/* Chỉ hiển thị với admin */}
-        {token && user.role === "admin" && (
-          <Link to="/admin/movies" className="nav-link" style={{ color: "#e50914" }}>
-            👑 Quản lý phim
-          </Link>
+        {isAdmin && (
+          <>
+            <Link to="/admin/movies" className="nav-link" style={{ color: "#e50914" }}>
+              👑 Quản lý phim
+            </Link>
+            <Link to="/rooms" className="nav-link" style={{ color: "#e50914" }}>
+              🎭 Quản lý phòng
+            </Link>
+          </>
         )}
         
         {token ? (

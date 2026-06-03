@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 
 const API_URL = "http://localhost:5000/api/showtimes";
 const MOVIE_API_URL = "http://localhost:5000/api/movies";
+const ROOM_API_URL = "http://localhost:5000/api/rooms";  // ← THÊM API ROOM
 
 const ShowTimeForm = () => {
     const { id } = useParams();
@@ -13,12 +14,13 @@ const ShowTimeForm = () => {
     const [formData, setFormData] = useState({
         movieId: "",
         cinemaName: "",
-        roomName: "",
+        roomId: "",          // ← ĐỔI roomName THÀNH roomId
         startTime: "",
         price: "",
     });
 
     const [movies, setMovies] = useState([]);
+    const [rooms, setRooms] = useState([]);  // ← THÊM STATE CHO ROOMS
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
@@ -27,6 +29,7 @@ const ShowTimeForm = () => {
 
     useEffect(() => {
         fetchMovies();
+        fetchRooms();  // ← THÊM
         if (isEditMode) {
             fetchShowtime();
         }
@@ -39,6 +42,17 @@ const ShowTimeForm = () => {
         } catch (err) {
             console.error("Lỗi tải phim:", err);
             setError("Không thể tải danh sách phim");
+        }
+    };
+
+    // ← THÊM HÀM LẤY DANH SÁCH PHÒNG
+    const fetchRooms = async () => {
+        try {
+            const response = await axios.get(ROOM_API_URL);
+            setRooms(response.data.data);
+        } catch (err) {
+            console.error("Lỗi tải phòng:", err);
+            setError("Không thể tải danh sách phòng");
         }
     };
 
@@ -55,7 +69,7 @@ const ShowTimeForm = () => {
             setFormData({
                 movieId: data.movieId?._id || data.movieId || "",
                 cinemaName: data.cinemaName || "",
-                roomName: data.roomName || "",
+                roomId: data.roomId?._id || data.roomId || "",  // ← SỬA
                 startTime: startTimeFormatted,
                 price: data.price || "",
             });
@@ -81,7 +95,7 @@ const ShowTimeForm = () => {
         setError("");
         setSuccess("");
 
-        if (!formData.movieId || !formData.cinemaName || !formData.roomName || !formData.startTime || !formData.price) {
+        if (!formData.movieId || !formData.cinemaName || !formData.roomId || !formData.startTime || !formData.price) {
             setError("Vui lòng điền đầy đủ thông tin");
             setLoading(false);
             return;
@@ -112,7 +126,7 @@ const ShowTimeForm = () => {
                 setFormData({
                     movieId: "",
                     cinemaName: "",
-                    roomName: "",
+                    roomId: "",
                     startTime: "",
                     price: "",
                 });
@@ -173,9 +187,17 @@ const ShowTimeForm = () => {
                     <input type="text" name="cinemaName" value={formData.cinemaName} onChange={handleChange} required />
                 </div>
 
+                {/* ← ĐỔI INPUT TEXT THÀNH SELECT */}
                 <div className="showtime-form-group">
-                    <label>Tên phòng *</label>
-                    <input type="text" name="roomName" value={formData.roomName} onChange={handleChange} required />
+                    <label>Chọn phòng chiếu *</label>
+                    <select name="roomId" value={formData.roomId} onChange={handleChange} required>
+                        <option value="">-- Chọn phòng --</option>
+                        {rooms.map((room) => (
+                            <option key={room._id} value={room._id}>
+                                {room.name} ({room.type} - {room.capacity} ghế)
+                            </option>
+                        ))}
+                    </select>
                 </div>
 
                 <div className="showtime-form-group">
