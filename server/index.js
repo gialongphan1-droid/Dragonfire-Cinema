@@ -28,24 +28,30 @@ app.use("/api/auth", require("./routes/authRoutes"));
 // Movie routes
 const movieRoutes = require("./routes/movieRoutes");
 app.use("/api/movies", movieRoutes);
-// lịch chiếu 
+
+// Showtime routes - CHỈ KHAI BÁO 1 LẦN
 const showtimeRoutes = require("./routes/showtimeRoutes");
 app.use("/api/showtimes", showtimeRoutes);
-// dặt vé
+
+// Booking routes
 const bookingRoutes = require("./routes/bookingRoutes");
 app.use("/api/bookings", bookingRoutes);
 
-// Showtime routes
-const showtimeRoutes = require("./routes/showtimeRoutes");
-app.use("/api/showtimes", showtimeRoutes);
-
-// ✅ THÊM ROOM ROUTES VÀO ĐÂY
+// Room routes
 const roomRoutes = require("./routes/roomRoutes");
 app.use("/api/rooms", roomRoutes);
 
 // Test route
 app.get("/api/test", (req, res) => {
 	res.json({ message: "API đang hoạt động!" });
+});
+
+// ✅ THÊM API LẤY THỜI GIAN THỰC TỪ SERVER
+app.get("/api/current-time", (req, res) => {
+	res.json({ 
+		success: true, 
+		currentTime: new Date().toISOString() 
+	});
 });
 
 // Error handling middleware

@@ -1758,3 +1758,110 @@ button:disabled {
     text-align: center;
   }
 }
+
+/* Nhóm phim theo suất chiếu */
+.movie-showtime-group {
+  background-color: var(--surface-color);
+  border-radius: 16px;
+  margin-bottom: 30px;
+  overflow: hidden;
+}
+
+.movie-group-header {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+  background: linear-gradient(135deg, rgba(229, 9, 20, 0.1), rgba(31, 31, 31, 0.95));
+}
+
+.movie-group-poster {
+  width: 80px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.movie-group-title {
+  color: var(--primary-color);
+  font-size: 1.3rem;
+  margin-bottom: 8px;
+}
+
+.movie-group-meta {
+  display: flex;
+  gap: 15px;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  flex-wrap: wrap;
+}
+
+.showtimes-group {
+  padding: 20px;
+}
+
+.showtimes-group-title {
+  color: var(--accent-color);
+  font-size: 1rem;
+  margin-bottom: 15px;
+}
+
+.showtimes-group-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.showtime-group-card {
+  background-color: rgba(229, 9, 20, 0.1);
+  border: 1px solid var(--primary-color);
+  border-radius: 10px;
+  padding: 10px 15px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 110px;
+}
+
+.showtime-group-card:hover {
+  background-color: var(--primary-color);
+  transform: scale(1.05);
+}
+
+.showtime-group-time {
+  color: var(--primary-color);
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+.showtime-group-card:hover .showtime-group-time {
+  color: white;
+}
+
+.showtime-group-date {
+  color: var(--text-secondary);
+  font-size: 0.7rem;
+  margin-top: 3px;
+}
+
+.showtime-group-room {
+  color: var(--text-secondary);
+  font-size: 0.65rem;
+  margin-top: 3px;
+}
+
+.showtime-group-price {
+  color: var(--accent-color);
+  font-size: 0.75rem;
+  font-weight: bold;
+  margin-top: 5px;
+}
+
+.showtime-group-seats {
+  font-size: 0.65rem;
+  margin-top: 5px;
+  color: var(--success-color);
+}
+
+.showtime-group-seats.seats-low {
+  color: var(--error-color);
+}

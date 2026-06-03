@@ -12,14 +12,33 @@ const ShowtimeList = () => {
   const [selectedMovie, setSelectedMovie] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
   const [filteredShowtimes, setFilteredShowtimes] = useState([]);
+  const [serverTime, setServerTime] = useState(null);
 
-  // Lấy ngày hôm nay
-  const today = new Date().toISOString().split("T")[0];
+  // Lấy thời gian thực từ server
+  useEffect(() => {
+    fetchServerTime();
+  }, []);
+
+  const fetchServerTime = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/current-time`);
+      if (response.data.success) {
+        setServerTime(new Date(response.data.currentTime));
+      }
+    } catch (err) {
+      console.error("Lỗi lấy thời gian server:", err);
+      setServerTime(new Date());
+    }
+  };
+
+  const today = serverTime ? new Date(serverTime).toISOString().split("T")[0] : "";
 
   useEffect(() => {
-    fetchShowtimes();
-    fetchMovies();
-  }, []);
+    if (serverTime) {
+      fetchShowtimes();
+      fetchMovies();
+    }
+  }, [serverTime]);
 
   useEffect(() => {
     filterShowtimes();
@@ -29,8 +48,41 @@ const ShowtimeList = () => {
     try {
       const response = await axios.get(`${API_URL}/showtimes`);
       if (response.data.success) {
-        setShowtimes(response.data.data);
-        setFilteredShowtimes(response.data.data);
+        // ✅ CHUẨN HÓA DỮ LIỆU: hỗ trợ cả cấu trúc cũ và mới
+        const normalizedShowtimes = response.data.data.map(st => {
+          // Lấy thời gian chiếu (ưu tiên startTime mới, nếu không thì dùng date + time cũ)
+          let showDateTime;
+          let roomName;
+          
+          if (st.startTime) {
+            // Cấu trúc mới
+            showDateTime = new Date(st.startTime);
+            roomName = st.roomName || st.room;
+          } else if (st.date && st.time) {
+            // Cấu trúc cũ
+            showDateTime = new Date(`${st.date}T${st.time}`);
+            roomName = st.room;
+          } else {
+            showDateTime = new Date();
+            roomName = "Chưa có phòng";
+          }
+          
+          return {
+            _id: st._id,
+            movieId: st.movieId,
+            room: roomName,
+            dateTime: showDateTime,
+            date: showDateTime,
+            price: st.price,
+            availableSeats: st.availableSeats || 100,
+            bookedSeats: st.bookedSeats || []
+          };
+        });
+        
+        // Lọc suất chiếu trong tương lai
+        const futureShowtimes = normalizedShowtimes.filter(st => st.dateTime > serverTime);
+        setShowtimes(futureShowtimes);
+        setFilteredShowtimes(futureShowtimes);
       }
     } catch (error) {
       console.error("Lỗi tải suất chiếu:", error);
@@ -59,18 +111,17 @@ const ShowtimeList = () => {
 
     if (selectedDate) {
       filtered = filtered.filter(st => {
-        // Kiểm tra date có tồn tại không
         if (!st.date) return false;
         try {
           const showDate = new Date(st.date).toISOString().split("T")[0];
           return showDate === selectedDate;
         } catch (error) {
-          console.error("Lỗi parse date:", st.date);
           return false;
         }
       });
     }
 
+    filtered.sort((a, b) => a.dateTime - b.dateTime);
     setFilteredShowtimes(filtered);
   };
 
@@ -83,10 +134,10 @@ const ShowtimeList = () => {
     return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(n);
   };
 
-  const formatDate = (dateStr) => {
-    if (!dateStr) return "Chưa có ngày";
+  const formatDate = (dateObj) => {
+    if (!dateObj) return "Chưa có ngày";
     try {
-      return new Date(dateStr).toLocaleDateString("vi-VN", {
+      return new Date(dateObj).toLocaleDateString("vi-VN", {
         weekday: "short",
         day: "2-digit",
         month: "2-digit",
@@ -97,7 +148,58 @@ const ShowtimeList = () => {
     }
   };
 
-  if (loading) {
+  const formatTime = (dateObj) => {
+    if (!dateObj) return "Chưa có giờ";
+    try {
+      return new Date(dateObj).toLocaleTimeString("vi-VN", {
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+    } catch (error) {
+      return "Giờ không hợp lệ";
+    }
+  };
+
+  const isStillValid = (dateTime) => {
+    if (!serverTime) return true;
+    return dateTime > serverTime;
+  };
+
+  const groupShowtimesByMovie = () => {
+    const grouped = {};
+    filteredShowtimes.forEach(showtime => {
+      const movieId = showtime.movieId?._id;
+      if (!movieId) return;
+      
+      if (!grouped[movieId]) {
+        grouped[movieId] = {
+          movie: showtime.movieId,
+          showtimes: []
+        };
+      }
+      
+      const isValid = isStillValid(showtime.dateTime);
+      
+      grouped[movieId].showtimes.push({
+        id: showtime._id,
+        time: formatTime(showtime.dateTime),
+        date: formatDate(showtime.dateTime),
+        fullDate: showtime.dateTime,
+        room: showtime.room,
+        price: showtime.price,
+        availableSeats: (showtime.availableSeats || 100) - (showtime.bookedSeats?.length || 0),
+        totalSeats: showtime.availableSeats || 100,
+        isValid: isValid
+      });
+      
+      grouped[movieId].showtimes.sort((a, b) => a.fullDate - b.fullDate);
+    });
+    return grouped;
+  };
+
+  const groupedShowtimes = groupShowtimesByMovie();
+
+  if (loading || !serverTime) {
     return <div className="loading text-center mt-5">Đang tải suất chiếu...</div>;
   }
 
@@ -106,7 +208,6 @@ const ShowtimeList = () => {
       <div className="container">
         <h1 className="section-title">🎬 LỊCH CHIẾU PHIM</h1>
 
-        {/* Bộ lọc */}
         <div className="filter-section">
           <div className="filter-group">
             <label>Chọn phim:</label>
@@ -140,55 +241,72 @@ const ShowtimeList = () => {
           )}
         </div>
 
-        {/* Kết quả */}
-        {filteredShowtimes.length === 0 ? (
+        {Object.keys(groupedShowtimes).length === 0 ? (
           <div className="no-results-home">
             <p>🎬 Không tìm thấy suất chiếu nào!</p>
             <p className="no-results-suggestion">Hãy thử chọn phim hoặc ngày khác nhé!</p>
           </div>
         ) : (
           <div className="showtimes-list">
-            {filteredShowtimes.map((showtime) => (
-              <div key={showtime._id} className="showtime-card-large">
-                <div className="showtime-movie-poster">
-                  <img
-                    src={showtime.movieId?.poster || "https://via.placeholder.com/100x150?text=No+Poster"}
-                    alt={showtime.movieId?.title}
-                  />
-                </div>
-                <div className="showtime-info-large">
-                  <h3 className="showtime-movie-title">{showtime.movieId?.title || "Không xác định"}</h3>
-                  <div className="showtime-movie-meta">
-                    <span>⭐ {showtime.movieId?.rating || "Chưa đánh giá"}</span>
-                    <span>⏱️ {showtime.movieId?.duration || 0} phút</span>
-                    <span>🎭 {showtime.movieId?.genre?.slice(0, 2).join(", ") || "Chưa cập nhật"}</span>
-                  </div>
-                  <div className="showtime-detail">
-                    <div className="showtime-room">
-                      <span>🏠 {showtime.room || "Chưa có phòng"}</span>
-                    </div>
-                    <div className="showtime-datetime">
-                      <span>📅 {formatDate(showtime.date)}</span>
-                      <span>⏰ {showtime.time || "Chưa có giờ"}</span>
-                    </div>
-                    <div className="showtime-price">
-                      <span>💰 {formatCurrency(showtime.price || 0)}</span>
-                    </div>
-                    <div className="showtime-seats-left">
-                      <span className={(showtime.availableSeats - (showtime.bookedSeats?.length || 0)) <= 10 ? "seats-low" : "seats-available"}>
-                        🪑 Còn {(showtime.availableSeats || 100) - (showtime.bookedSeats?.length || 0)}/{(showtime.availableSeats || 100)} ghế
-                      </span>
+            {Object.keys(groupedShowtimes).map((movieId) => {
+              const group = groupedShowtimes[movieId];
+              const movie = group.movie;
+              const movieShowtimes = group.showtimes;
+              
+              return (
+                <div key={movieId} className="movie-showtime-group">
+                  <div className="movie-group-header">
+                    <img
+                      src={movie?.poster || "https://via.placeholder.com/80x120?text=No+Poster"}
+                      alt={movie?.title}
+                      className="movie-group-poster"
+                      onError={(e) => {
+                        e.target.src = "https://via.placeholder.com/80x120?text=No+Poster";
+                      }}
+                    />
+                    <div className="movie-group-info">
+                      <h2 className="movie-group-title">{movie?.title || "Không xác định"}</h2>
+                      <div className="movie-group-meta">
+                        <span>⭐ {movie?.rating || "Chưa đánh giá"}</span>
+                        <span>⏱️ {movie?.duration || 0} phút</span>
+                        <span>🎭 {movie?.genre?.slice(0, 2).join(", ") || "Chưa cập nhật"}</span>
+                      </div>
                     </div>
                   </div>
-                  <button
-                    className="btn btn-primary booking-btn"
-                    onClick={() => navigate(`/booking?showtime=${showtime._id}`)}
-                  >
-                    🎫 Đặt Vé Ngay
-                  </button>
+                  
+                  <div className="showtimes-group">
+                    <h3 className="showtimes-group-title">📅 CÁC SUẤT CHIẾU</h3>
+                    <div className="showtimes-group-grid">
+                      {movieShowtimes.map((showtime, idx) => (
+                        <div 
+                          key={idx}
+                          className={`showtime-group-card ${!showtime.isValid ? "expired-showtime" : ""}`}
+                          onClick={() => {
+                            if (showtime.isValid) {
+                              navigate(`/booking?showtime=${showtime.id}`);
+                            } else {
+                              alert("❌ Suất chiếu này đã qua thời gian! Không thể đặt vé.");
+                            }
+                          }}
+                          style={!showtime.isValid ? { opacity: 0.6, cursor: "not-allowed" } : {}}
+                        >
+                          <div className="showtime-group-time">{showtime.time}</div>
+                          <div className="showtime-group-date">{showtime.date}</div>
+                          <div className="showtime-group-room">{showtime.room}</div>
+                          <div className="showtime-group-price">{formatCurrency(showtime.price)}</div>
+                          <div className={`showtime-group-seats ${showtime.availableSeats <= 10 ? "seats-low" : ""}`}>
+                            🪑 Còn {showtime.availableSeats}/{showtime.totalSeats} ghế
+                          </div>
+                          {!showtime.isValid && (
+                            <div className="expired-badge">Hết hạn</div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
