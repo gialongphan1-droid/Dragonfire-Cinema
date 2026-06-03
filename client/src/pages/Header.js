@@ -27,17 +27,19 @@ const Header = () => {
         <Link to="/products" className="nav-link">Combo</Link>
         
         {/* Chỉ hiển thị với admin */}
-        {isAdmin && (
+        {token && user.role === "admin" && (
           <>
             <Link to="/admin/movies" className="nav-link" style={{ color: "#e50914" }}>
-              👑 Quản lý phim
+              🎬 Quản lý phim
             </Link>
-            <Link to="/rooms" className="nav-link" style={{ color: "#e50914" }}>
-              🎭 Quản lý phòng
+            <Link to="/admin/showtimes" className="nav-link" style={{ color: "#e50914" }}>
+              🕐 Quản lý suất chiếu
             </Link>
           </>
         )}
-        
+        {token && (
+  <Link to="/my-bookings" className="nav-link">Lịch sử đặt vé</Link>
+)}
         {token ? (
           <div className="user-info">
             <span className="user-name">Xin chào, {user.name || "User"}</span>
@@ -47,6 +49,7 @@ const Header = () => {
         ) : (
           <Link to="/login" className="login-link">Đăng nhập</Link>
         )}
+		
       </nav>
     </header>
   );

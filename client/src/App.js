@@ -9,6 +9,10 @@ import MovieList from "./pages/movie/MovieList";
 import MovieDetail from "./pages/movie/MovieDetail";
 import MovieAdmin from "./pages/movie/MovieAdmin";
 import PrivateRoute from "./components/PrivateRoute";
+import ShowtimeAdmin from "./pages/showtime/ShowtimeAdmin";
+import ShowtimeList from "./pages/showtime/ShowtimeList";
+import Booking from "./pages/booking/Booking";
+
 import "./App.css";
 
 // Import các component của Hoàng - Module Showtime
@@ -35,6 +39,9 @@ function App() {
           {/* Movie Routes - Lê Long */}
           <Route path="/movies" element={<MovieList />} />
           <Route path="/movies/:id" element={<MovieDetail />} />
+		  <Route path="/showtimes" element={<ShowtimeList />} />
+		  <Route path="/booking" element={<Booking />} />
+
           <Route
             path="/admin/movies"
             element={
@@ -43,18 +50,15 @@ function App() {
               </PrivateRoute>
             }
           />
-          
-          {/* Showtime Routes - Hoàng */}
-          <Route path="/lich-chieu" element={<LichChieu />} />
-          <Route path="/showtimes" element={<ShowTimeList />} />
-          <Route path="/showtimes/:id" element={<ShowTimeDetails />} />
-          <Route path="/showtimes/add" element={<PrivateRoute adminOnly={true}><ShowTimeForm /></PrivateRoute>} />
-          <Route path="/showtimes/edit/:id" element={<PrivateRoute adminOnly={true}><ShowTimeForm /></PrivateRoute>} />
-          
-          {/* ✅ THÊM ROOM ROUTES - Quản lý phòng chiếu */}
-          <Route path="/rooms" element={<RoomList />} />
-          <Route path="/rooms/add" element={<PrivateRoute adminOnly={true}><RoomForm /></PrivateRoute>} />
-          <Route path="/rooms/edit/:id" element={<PrivateRoute adminOnly={true}><RoomForm /></PrivateRoute>} />
+		  <Route
+  path="/admin/showtimes"
+  element={
+    <PrivateRoute adminOnly={true}>
+      <ShowtimeAdmin />
+    </PrivateRoute>
+  }
+/>
+
         </Routes>
       </main>
       <Footer />

@@ -4,11 +4,31 @@ import axios from "axios";
 
 const API_URL = "http://localhost:5000/api";
 
+// Hàm lấy ID video từ URL YouTube
+const getYouTubeId = (url) => {
+  if (!url) return null;
+  
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/,
+    /youtube\.com\/embed\/([^&\n?#]+)/,
+    /youtube\.com\/shorts\/([^&\n?#]+)/
+  ];
+  
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match && match[1]) {
+      return match[1];
+    }
+  }
+  return null;
+};
+
 const MovieDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [movie, setMovie] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showTrailer, setShowTrailer] = useState(false);
 
   useEffect(() => {
     fetchMovieDetail();
@@ -26,6 +46,16 @@ const MovieDetail = () => {
       setLoading(false);
     }
   };
+
+  const handleWatchTrailer = () => {
+    setShowTrailer(true);
+  };
+
+  const handleCloseTrailer = () => {
+    setShowTrailer(false);
+  };
+
+  const videoId = movie?.trailerUrl ? getYouTubeId(movie.trailerUrl) : null;
 
   if (loading) {
     return <div className="loading text-center mt-5">Đang tải...</div>;
@@ -81,14 +111,47 @@ const MovieDetail = () => {
             <p>{movie.director || "Chưa cập nhật"}</p>
           </div>
 
-          <button
-            className="btn btn-primary mt-3"
-            onClick={() => navigate(`/showtimes?movie=${movie._id}`)}
-          >
-            🎫 Đặt Vé Ngay
-          </button>
+          <div className="movie-buttons" style={{ display: "flex", gap: "1rem", marginTop: "1.5rem", flexWrap: "wrap" }}>
+            <button
+              className="btn btn-primary"
+              onClick={() => navigate(`/showtimes?movie=${movie._id}`)}
+            >
+              🎫 Đặt Vé Ngay
+            </button>
+            
+            {/* Nút xem trailer - chỉ hiển thị nếu có trailer */}
+            {videoId && (
+              <button
+                className="btn btn-outline"
+                onClick={handleWatchTrailer}
+                style={{ display: "flex", alignItems: "center", gap: "8px" }}
+              >
+                ▶ Xem Trailer
+              </button>
+            )}
+          </div>
         </div>
       </div>
+
+      {/* Modal xem trailer */}
+      {showTrailer && videoId && (
+        <div className="modal-overlay" onClick={handleCloseTrailer}>
+          <div className="trailer-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="trailer-close" onClick={handleCloseTrailer}>
+              ✕
+            </button>
+            <iframe
+              width="100%"
+              height="100%"
+              src={`https://www.youtube.com/embed/${videoId}?autoplay=1`}
+              title="Movie Trailer"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            ></iframe>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
