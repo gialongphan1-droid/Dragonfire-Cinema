@@ -133,6 +133,19 @@ const ShowTimeDetails = () => {
         }
     };
 
+    // Hàm lấy ảnh phim dựa trên tên phim
+    const getMovieImage = (title) => {
+        const images = {
+            "AVENGERS: ENDGAME": "https://image.tmdb.org/t/p/w500/ry8US8KWRxW3rZ7FHSQ8nxB6X8v.jpg",
+            "JOKER": "https://image.tmdb.org/t/p/w500/udDclJoHjfjb8Ekgsd4FDteOkCU.jpg",
+            "INSIDE OUT 2": "https://image.tmdb.org/t/p/w500/9FxJ2hLJKV8Tl9vSgvG1yO8Bm3d.jpg",
+            "DUNE: PART TWO": "https://image.tmdb.org/t/p/w500/8uUUqvQnyD5M7J2Fh4bVQY9pV7.jpg",
+            "OPPENHEIMER": "https://image.tmdb.org/t/p/w500/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg",
+            "BARBIE": "https://image.tmdb.org/t/p/w500/iuFNMS8U5cb6xfzi51Dbkovj7vM.jpg"
+        };
+        return images[title] || "https://placehold.co/300x450/e50914/white?text=DRAGONFIRE";
+    };
+
     const renderSeatMap = () => {
         const rows = {};
         seats.forEach(seat => {
@@ -220,74 +233,92 @@ const ShowTimeDetails = () => {
                 </div>
             )}
 
-            <div className="showtime-detail-header">
-                <h2 className="showtime-detail-title">{showtime.movieTitle}</h2>
-                <button className="btn-back" onClick={() => navigate("/showtimes")}>
-                    ← Quay lại
-                </button>
-            </div>
+            {/* Layout 2 cột: Ảnh bên trái, thông tin bên phải */}
+            <div className="showtime-detail-layout">
+                {/* Cột trái - Ảnh phim */}
+                <div className="movie-poster-detail">
+                    <img 
+                        src={getMovieImage(showtime.movieTitle)}
+                        alt={showtime.movieTitle}
+                        className="movie-poster-img"
+                        onError={(e) => {
+                            e.target.src = "https://placehold.co/300x450/e50914/white?text=DRAGONFIRE";
+                        }}
+                    />
+                </div>
 
-            <div className="showtime-detail-info">
-                <div className="info-item">
-                    <div className="info-label">📅 Ngày chiếu</div>
-                    <div className="info-value">{formatDate(showtime.startTime)}</div>
-                </div>
-                <div className="info-item">
-                    <div className="info-label">⏰ Giờ chiếu</div>
-                    <div className="info-value showtime-time-detail">{formatTime(showtime.startTime)}</div>
-                </div>
-                <div className="info-item">
-                    <div className="info-label">🏠 Rạp</div>
-                    <div className="info-value">{showtime.cinemaName}</div>
-                </div>
-                <div className="info-item">
-                    <div className="info-label">🎭 Phòng</div>
-                    <div className="info-value">{showtime.roomName}</div>
-                </div>
-                <div className="info-item">
-                    <div className="info-label">💰 Giá vé</div>
-                    <div className="info-value showtime-price-detail">{showtime.price.toLocaleString()}đ</div>
-                </div>
-            </div>
+                {/* Cột phải - Thông tin và sơ đồ ghế */}
+                <div className="showtime-detail-right">
+                    <div className="showtime-detail-header">
+                        <h2 className="showtime-detail-title">{showtime.movieTitle}</h2>
+                        <button className="btn-back" onClick={() => navigate("/showtimes")}>
+                            ← Quay lại
+                        </button>
+                    </div>
 
-            {renderSeatMap()}
-
-            <div className="seat-legend">
-                <div className="legend-item">
-                    <div className="legend-box available"></div>
-                    <span>Ghế trống</span>
-                </div>
-                <div className="legend-item">
-                    <div className="legend-box selected"></div>
-                    <span>Ghế đang chọn</span>
-                </div>
-                <div className="legend-item">
-                    <div className="legend-box booked"></div>
-                    <span>Ghế đã đặt</span>
-                </div>
-            </div>
-
-            {selectedSeats.length > 0 && (
-                <div className="booking-summary">
-                    <div className="booking-info">
-                        <div className="selected-seats">
-                            🎫 Ghế đã chọn: {selectedSeats.map(s => s.seatNumber).join(", ")}
+                    <div className="showtime-detail-info">
+                        <div className="info-item">
+                            <div className="info-label">📅 Ngày chiếu</div>
+                            <div className="info-value">{formatDate(showtime.startTime)}</div>
                         </div>
-                        <div className="total-price">
-                            Tổng tiền: {getTotalPrice().toLocaleString()}đ
+                        <div className="info-item">
+                            <div className="info-label">⏰ Giờ chiếu</div>
+                            <div className="info-value showtime-time-detail">{formatTime(showtime.startTime)}</div>
+                        </div>
+                        <div className="info-item">
+                            <div className="info-label">🏠 Rạp</div>
+                            <div className="info-value">{showtime.cinemaName}</div>
+                        </div>
+                        <div className="info-item">
+                            <div className="info-label">🎭 Phòng</div>
+                            <div className="info-value">{showtime.roomName}</div>
+                        </div>
+                        <div className="info-item">
+                            <div className="info-label">💰 Giá vé</div>
+                            <div className="info-value showtime-price-detail">{showtime.price.toLocaleString()}đ</div>
                         </div>
                     </div>
-                    <button className="btn btn-primary booking-btn" onClick={handleBooking}>
-                        ĐẶT VÉ NGAY
-                    </button>
-                </div>
-            )}
 
-            {!isLoggedIn && (
-                <div className="login-warning">
-                    ⚠️ Vui lòng <button className="btn-link" onClick={() => navigate("/login")}>đăng nhập</button> để đặt vé
+                    {renderSeatMap()}
+
+                    <div className="seat-legend">
+                        <div className="legend-item">
+                            <div className="legend-box available"></div>
+                            <span>Ghế trống</span>
+                        </div>
+                        <div className="legend-item">
+                            <div className="legend-box selected"></div>
+                            <span>Ghế đang chọn</span>
+                        </div>
+                        <div className="legend-item">
+                            <div className="legend-box booked"></div>
+                            <span>Ghế đã đặt</span>
+                        </div>
+                    </div>
+
+                    {selectedSeats.length > 0 && (
+                        <div className="booking-summary">
+                            <div className="booking-info">
+                                <div className="selected-seats">
+                                    🎫 Ghế đã chọn: {selectedSeats.map(s => s.seatNumber).join(", ")}
+                                </div>
+                                <div className="total-price">
+                                    Tổng tiền: {getTotalPrice().toLocaleString()}đ
+                                </div>
+                            </div>
+                            <button className="btn btn-primary booking-btn" onClick={handleBooking}>
+                                ĐẶT VÉ NGAY
+                            </button>
+                        </div>
+                    )}
+
+                    {!isLoggedIn && (
+                        <div className="login-warning">
+                            ⚠️ Vui lòng <button className="btn-link" onClick={() => navigate("/login")}>đăng nhập</button> để đặt vé
+                        </div>
+                    )}
                 </div>
-            )}
+            </div>
         </div>
     );
 };

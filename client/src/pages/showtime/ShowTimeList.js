@@ -213,6 +213,33 @@ const ShowTimeList = () => {
             duration: "116 phút",
             cinema: "Dragonfire Cinema",
             rating: "⭐ 7.5"
+        },
+        {
+            id: "13",
+            title: "THE SHAWSHANK REDEMPTION",
+            image: "https://images-na.ssl-images-amazon.com/images/I/71715eBi1sL.jpg",
+            genre: "Chính kịch, Tội phạm",
+            duration: "142 phút",
+            cinema: "Dragonfire Cinema",
+            rating: "⭐ 9.3"
+        },
+        {
+            id: "14",
+            title: "INCEPTION",
+            image: "https://i.ebayimg.com/images/g/LlUAAOSwm8VUwoRL/s-l1200.jpg",
+            genre: "Khoa học viễn tưởng, Chính kịch",
+            duration: "148 phút",
+            cinema: "Dragonfire Cinema",
+            rating: "⭐ 8.8"
+        },
+        {
+            id: "15",
+            title: "THE DARK KNIGHT",
+            image: "https://m.media-amazon.com/images/M/MV5BMTMxNTMwODM0NF5BMl5BanBnXkFtZTcwODAyMTk2Mw@@._V1_FMjpg_UX1000_.jpg",
+            genre: "Hành động, Tội phạm",
+            duration: "152 phút",
+            cinema: "Dragonfire Cinema",
+            rating: "⭐ 9.0"
         }
     ];
     
@@ -279,6 +306,21 @@ const ShowTimeList = () => {
             { id: "s37", time: "13:00", room: "Phòng 2D", price: 90000, date: "28/12" },
             { id: "s38", time: "17:30", room: "Phòng 2D", price: 100000, date: "28/12" },
             { id: "s39", time: "20:30", room: "Phòng 2D", price: 100000, date: "28/12" }
+        ],
+        "13": [
+            { id: "s40", time: "10:00", room: "Phòng A3", price: 95000, date: "28/12" },
+            { id: "s41", time: "14:45", room: "Phòng A3", price: 105000, date: "28/12" },
+            { id: "s42", time: "19:30", room: "Phòng A3", price: 115000, date: "28/12" }
+        ],
+        "14": [
+            { id: "s43", time: "11:30", room: "Phòng VIP", price: 140000, date: "29/12" },
+            { id: "s44", time: "16:00", room: "Phòng VIP", price: 150000, date: "29/12" },
+            { id: "s45", time: "20:45", room: "Phòng VIP", price: 160000, date: "29/12" }
+        ],
+        "15": [
+            { id: "s46", time: "12:15", room: "Phòng 3D", price: 125000, date: "29/12" },
+            { id: "s47", time: "17:30", room: "Phòng 3D", price: 135000, date: "29/12" },
+            { id: "s48", time: "21:00", room: "Phòng 3D", price: 145000, date: "29/12" }
         ]
     };
 

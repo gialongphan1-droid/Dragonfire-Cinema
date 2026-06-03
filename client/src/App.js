@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import Header from "./pages/Header";
 import Footer from "./pages/Footer";
 import Home from "./pages/Home";
@@ -11,36 +11,11 @@ import MovieAdmin from "./pages/movie/MovieAdmin";
 import PrivateRoute from "./components/PrivateRoute";
 import "./App.css";
 
-// Tạo component con để dùng useLocation
-function AppContent() {
-	const location = useLocation();
-	const isAuthPage = location.pathname === "/login" || location.pathname === "/register";
-	
-	return (
-		<>
-			{!isAuthPage && <Header />}
-			<main className="main-content">
-				<Routes>
-					<Route path="/login" element={<Login />} />
-					<Route path="/register" element={<Register />} />
-					
-					<Route path="/home" element={<PrivateRoute><Home /></PrivateRoute>} />
-					
-					{/* === ROUTE MỚI CHO LỊCH CHIẾU === */}
-					<Route path="/lich-chieu" element={<LichChieu />} />
-					
-					<Route path="/showtimes" element={<ShowTimeList />} />
-					<Route path="/showtimes/:id" element={<ShowTimeDetails />} />
-					<Route path="/showtimes/add" element={<PrivateRoute><ShowTimeForm /></PrivateRoute>} />
-					<Route path="/showtimes/edit/:id" element={<PrivateRoute><ShowTimeForm /></PrivateRoute>} />
-					
-					<Route path="/" element={<PrivateRoute><Home /></PrivateRoute>} />
-				</Routes>
-			</main>
-			{!isAuthPage && <Footer />}
-		</>
-	);
-}
+// Import các component của Hoàng - Module Showtime
+import LichChieu from "./pages/showtime/LichChieu";
+import ShowTimeList from "./pages/showtime/ShowTimeList";
+import ShowTimeDetails from "./pages/showtime/ShowTimeDetails";
+import ShowTimeForm from "./pages/showtime/ShowTimeForm";
 
 function App() {
   return (
@@ -48,9 +23,12 @@ function App() {
       <Header />
       <main style={{ minHeight: "calc(100vh - 200px)" }}>
         <Routes>
+          {/* Public Routes */}
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          
+          {/* Movie Routes - Lê Long */}
           <Route path="/movies" element={<MovieList />} />
           <Route path="/movies/:id" element={<MovieDetail />} />
           <Route
@@ -61,6 +39,13 @@ function App() {
               </PrivateRoute>
             }
           />
+          
+          {/* Showtime Routes - Hoàng */}
+          <Route path="/lich-chieu" element={<LichChieu />} />
+          <Route path="/showtimes" element={<ShowTimeList />} />
+          <Route path="/showtimes/:id" element={<ShowTimeDetails />} />
+          <Route path="/showtimes/add" element={<PrivateRoute adminOnly={true}><ShowTimeForm /></PrivateRoute>} />
+          <Route path="/showtimes/edit/:id" element={<PrivateRoute adminOnly={true}><ShowTimeForm /></PrivateRoute>} />
         </Routes>
       </main>
       <Footer />
