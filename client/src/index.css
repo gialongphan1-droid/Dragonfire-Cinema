@@ -589,3 +589,1838 @@ button:disabled {
 		grid-template-columns: 1fr;
 	}
 }
+
+/* ========== HOÀNG - MODULE SHOWTIME ========== */
+
+.showtime-container {
+    background-color: var(--surface-color);  
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.showtime-item {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-left: 4px solid var(--primary-color);  
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+    transition: all 0.3s ease;
+}
+
+.showtime-item:hover {
+    background-color: rgba(229, 9, 20, 0.1);
+    border-left-color: var(--primary-dark); 
+    transform: translateX(5px);
+}
+
+.showtime-time {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: var(--primary-color);  
+    font-family: monospace;
+    background-color: rgba(229, 9, 20, 0.15);
+    padding: 5px 15px;
+    border-radius: 30px;
+}
+
+/* Thông tin phòng chiếu */
+.showtime-room {
+    color: var(--text-secondary);  
+}
+
+/* Giá vé */
+.showtime-price {
+    color: var(--accent-color);  
+    font-weight: bold;
+}
+
+/* Trạng thái suất chiếu */
+.showtime-status.available {
+    color: var(--success-color);  
+}
+
+.showtime-status.soldout {
+    color: var(--error-color);  
+}
+
+/* ==================== HOÀNG - MODULE SHOWTIME ==================== */
+
+.showtime-container {
+    background-color: var(--surface-color);
+    border-radius: 12px;
+    padding: 24px;
+    margin: 20px auto;
+    max-width: 1200px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Tiêu đề của module Showtime */
+.showtime-title {
+    color: var(--text-primary);
+    font-size: 1.8rem;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 24px;
+    border-bottom: 2px solid var(--primary-color);
+    display: inline-block;
+    padding-bottom: 8px;
+}
+
+/* Mỗi suất chiếu - Card item */
+.showtime-item {
+    background: linear-gradient(135deg, rgba(229, 9, 20, 0.05) 0%, rgba(31, 31, 31, 0.95) 100%);
+    border-left: 4px solid var(--primary-color);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.showtime-item:hover {
+    transform: translateX(8px);
+    background: linear-gradient(135deg, rgba(229, 9, 20, 0.15) 0%, rgba(31, 31, 31, 1) 100%);
+    box-shadow: 0 4px 12px rgba(229, 9, 20, 0.3);
+}
+
+/* Thời gian chiếu */
+.showtime-time {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--primary-color);
+    font-family: monospace;
+    background-color: rgba(229, 9, 20, 0.15);
+    padding: 6px 16px;
+    border-radius: 30px;
+    min-width: 100px;
+    text-align: center;
+}
+
+/* Tên phim */
+.showtime-movie {
+    flex: 2;
+    min-width: 150px;
+}
+
+.showtime-movie strong {
+    color: var(--text-primary);
+    font-size: 1rem;
+    display: block;
+}
+
+.showtime-movie small {
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+}
+
+/* Thông tin phòng chiếu */
+.showtime-room {
+    flex: 1;
+    color: var(--text-secondary);
+    min-width: 160px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.showtime-room::before {
+    content: "🎬";
+}
+
+/* Giá vé */
+.showtime-price {
+    flex: 1;
+    color: var(--accent-color);
+    font-weight: bold;
+    font-size: 1.2rem;
+    min-width: 100px;
+}
+
+.showtime-price::after {
+    content: "đ";
+    font-size: 0.9rem;
+}
+
+/* Trạng thái suất chiếu */
+.showtime-status {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    min-width: 80px;
+    text-align: center;
+}
+
+.showtime-status.available {
+    background-color: rgba(76, 175, 80, 0.2);
+    color: var(--success-color);
+}
+
+.showtime-status.limited {
+    background-color: rgba(255, 215, 0, 0.2);
+    color: var(--accent-color);
+}
+
+.showtime-status.soldout {
+    background-color: rgba(255, 68, 68, 0.2);
+    color: var(--error-color);
+}
+
+/* Responsive cho tablet */
+@media (max-width: 768px) {
+    .showtime-container {
+        padding: 16px;
+        margin: 12px;
+    }
+    
+    .showtime-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .showtime-time {
+        width: 100%;
+        text-align: center;
+        margin-bottom: 8px;
+    }
+    
+    .showtime-movie,
+    .showtime-room,
+    .showtime-price {
+        width: 100%;
+    }
+    
+    .showtime-status {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+/* Responsive cho mobile */
+@media (max-width: 480px) {
+    .showtime-container {
+        padding: 12px;
+    }
+    
+    .showtime-time {
+        font-size: 1.2rem;
+        padding: 4px 12px;
+    }
+    
+    .showtime-price {
+        font-size: 1rem;
+    }
+}
+
+/* Loading state cho Showtime */
+.showtime-loading {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-secondary);
+}
+
+/* Empty state - khi không có suất chiếu */
+.showtime-empty {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-secondary);
+    background-color: var(--surface-color);
+    border-radius: 12px;
+}
+
+/* Form thêm/sửa suất chiếu (dành cho admin) */
+.showtime-form {
+    background-color: var(--surface-color);
+    border-radius: 12px;
+    padding: 24px;
+    max-width: 600px;
+    margin: 20px auto;
+}
+
+.showtime-form-title {
+    color: var(--primary-color);
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.showtime-form-group {
+    margin-bottom: 16px;
+}
+
+.showtime-form-group label {
+    display: block;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.showtime-form-group input,
+.showtime-form-group select {
+    width: 100%;
+    padding: 10px 12px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+.showtime-form-group input:focus,
+.showtime-form-group select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.showtime-form-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+/* Chi tiết suất chiếu */
+.showtime-detail {
+    background-color: var(--surface-color);
+    border-radius: 12px;
+    padding: 24px;
+    max-width: 800px;
+    margin: 20px auto;
+}
+
+.showtime-detail-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 16px;
+    margin-bottom: 20px;
+}
+
+.showtime-detail-info {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.showtime-detail-label {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+.showtime-detail-value {
+    color: var(--text-primary);
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+/* Sơ đồ ghế ngồi */
+.seat-map {
+    margin-top: 24px;
+}
+
+.seat-map-title {
+    color: var(--accent-color);
+    margin-bottom: 16px;
+}
+
+.screen {
+    background-color: rgba(255, 255, 255, 0.1);
+    text-align: center;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+.seat-grid {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.seat {
+    aspect-ratio: 1;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.seat.available {
+    background-color: rgba(76, 175, 80, 0.3);
+    border: 1px solid var(--success-color);
+}
+
+.seat.available:hover {
+    background-color: var(--success-color);
+    transform: scale(1.1);
+}
+
+.seat.selected {
+    background-color: var(--accent-color);
+    border: 1px solid var(--accent-color);
+}
+
+.seat.booked {
+    background-color: rgba(255, 68, 68, 0.3);
+    border: 1px solid var(--error-color);
+    cursor: not-allowed;
+}
+
+.seat-legend {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.legend-box {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+}
+
+.legend-box.available {
+    background-color: rgba(76, 175, 80, 0.3);
+    border: 1px solid var(--success-color);
+}
+
+.legend-box.selected {
+    background-color: var(--accent-color);
+}
+
+.legend-box.booked {
+    background-color: rgba(255, 68, 68, 0.3);
+    border: 1px solid var(--error-color);
+}
+/* Success message cho form */
+.success-message {
+    background-color: rgba(76, 175, 80, 0.2);
+    color: var(--success-color);
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border-left: 4px solid var(--success-color);
+}
+
+/* Style cho select dropdown */
+.showtime-form-group select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='white'><path d='M7 10l5 5 5-5z'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+}
+
+/* Disabled button state */
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* ========== SHOWTIME DETAIL - CHI TIẾT SUẤT CHIẾU ========== */
+
+.showtime-detail {
+    background-color: var(--surface-color);
+    border-radius: 16px;
+    padding: 24px;
+    max-width: 1000px;
+    margin: 20px auto;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.showtime-detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 16px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.showtime-detail-title {
+    color: var(--primary-color);
+    font-size: 1.8rem;
+    margin: 0;
+}
+
+.btn-back {
+    background-color: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: var(--text-primary);
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-back:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: translateX(-4px);
+}
+
+.showtime-detail-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+    background-color: rgba(255, 255, 255, 0.05);
+    padding: 16px;
+    border-radius: 12px;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.info-label {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.info-value {
+    color: var(--text-primary);
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.showtime-time-detail {
+    color: var(--primary-color);
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.showtime-price-detail {
+    color: var(--accent-color);
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+/* Sơ đồ ghế */
+.seat-map {
+    margin-top: 24px;
+}
+
+.screen {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.02) 100%);
+    text-align: center;
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 32px;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    letter-spacing: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.seat-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+    gap: 12px;
+}
+
+.row-label {
+    width: 40px;
+    font-weight: bold;
+    color: var(--accent-color);
+    font-size: 1.1rem;
+    text-align: center;
+}
+
+.seat-grid {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 8px;
+    flex: 1;
+}
+
+.seat {
+    aspect-ratio: 1;
+    min-width: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.seat.available {
+    background-color: rgba(76, 175, 80, 0.2);
+    border: 2px solid var(--success-color);
+    color: var(--success-color);
+}
+
+.seat.available:hover {
+    background-color: var(--success-color);
+    color: white;
+    transform: scale(1.05);
+}
+
+.seat.selected {
+    background-color: var(--accent-color);
+    border: 2px solid var(--accent-color);
+    color: #000;
+    transform: scale(1.02);
+}
+
+.seat.booked {
+    background-color: rgba(255, 68, 68, 0.2);
+    border: 2px solid var(--error-color);
+    color: var(--error-color);
+    cursor: not-allowed;
+    text-decoration: line-through;
+}
+
+/* Booking summary */
+.booking-summary {
+    margin-top: 32px;
+    padding: 20px;
+    background: linear-gradient(135deg, rgba(229, 9, 20, 0.1) 0%, rgba(31, 31, 31, 0.95) 100%);
+    border-radius: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.booking-info {
+    flex: 1;
+}
+
+.selected-seats {
+    color: var(--text-primary);
+    font-size: 1rem;
+    margin-bottom: 8px;
+}
+
+.total-price {
+    color: var(--accent-color);
+    font-size: 1.3rem;
+    font-weight: bold;
+}
+
+.booking-btn {
+    padding: 12px 32px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.02);
+    }
+}
+
+.booking-success {
+    background-color: rgba(76, 175, 80, 0.2);
+    color: var(--success-color);
+    padding: 12px 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.login-warning {
+    margin-top: 20px;
+    padding: 12px;
+    text-align: center;
+    background-color: rgba(255, 68, 68, 0.1);
+    border-radius: 8px;
+    color: var(--error-color);
+}
+
+.btn-link {
+    background: none;
+    border: none;
+    color: var(--primary-color);
+    cursor: pointer;
+    text-decoration: underline;
+    font-weight: bold;
+}
+
+.btn-link:hover {
+    color: var(--accent-color);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .showtime-detail {
+        padding: 16px;
+        margin: 12px;
+    }
+    
+    .showtime-detail-title {
+        font-size: 1.3rem;
+    }
+    
+    .seat-grid {
+        gap: 4px;
+    }
+    
+    .seat {
+        min-width: 30px;
+        font-size: 0.6rem;
+    }
+    
+    .row-label {
+        width: 30px;
+        font-size: 0.9rem;
+    }
+    
+    .booking-summary {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .booking-btn {
+        width: 100%;
+    }
+}
+
+/* Header của danh sách suất chiếu */
+.showtime-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.showtime-title {
+    color: var(--text-primary);
+    font-size: 1.8rem;
+    font-weight: bold;
+    margin: 0;
+}
+
+/* Action buttons cho admin */
+.showtime-actions {
+    display: flex;
+    gap: 8px;
+    margin-left: auto;
+}
+
+.btn-edit, .btn-delete {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.btn-edit {
+    color: var(--accent-color);
+}
+
+.btn-edit:hover {
+    background-color: rgba(255, 215, 0, 0.2);
+    transform: scale(1.1);
+}
+
+.btn-delete {
+    color: var(--error-color);
+}
+
+.btn-delete:hover {
+    background-color: rgba(255, 68, 68, 0.2);
+    transform: scale(1.1);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .showtime-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .showtime-actions {
+        margin-left: 0;
+        justify-content: flex-end;
+    }
+}
+
+/* Container chính */
+.lich-chieu-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.lich-chieu-title {
+    color: var(--primary-color);
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 30px;
+    font-weight: bold;
+}
+
+/* Grid phim - 4 cột trên PC, 2 cột trên tablet, 1 cột trên mobile */
+.phim-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 25px;
+}
+
+@media (max-width: 1024px) {
+    .phim-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .phim-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .phim-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Card phim */
+.phim-card {
+    background-color: var(--surface-color);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.phim-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(229, 9, 20, 0.2);
+}
+
+/* Container ảnh phim */
+.phim-image-container {
+    position: relative;
+    cursor: pointer;
+    overflow: hidden;
+    aspect-ratio: 2/3;
+}
+
+.phim-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.phim-image-container:hover .phim-image {
+    transform: scale(1.05);
+}
+
+.image-fallback {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.fallback-emoji {
+    font-size: 4rem;
+}
+
+/* Overlay trên ảnh */
+.phim-overlay {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 4px 8px;
+    border-radius: 20px;
+}
+
+.phim-rating {
+    color: var(--accent-color);
+    font-size: 0.75rem;
+    font-weight: bold;
+}
+
+/* Thông tin phim */
+.phim-info {
+    padding: 12px;
+    cursor: pointer;
+}
+
+.phim-ten {
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    font-weight: bold;
+    margin-bottom: 5px;
+    line-height: 1.3;
+}
+
+.phim-meta {
+    color: var(--text-secondary);
+    font-size: 0.7rem;
+    margin-bottom: 5px;
+}
+
+.phim-rap {
+    color: var(--accent-color);
+    font-size: 0.7rem;
+}
+
+/* Phần suất chiếu */
+.suat-chieu-container {
+    padding: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: rgba(0, 0, 0, 0.3);
+}
+
+.suat-chieu-header {
+    margin-bottom: 12px;
+}
+
+.suat-chieu-title {
+    color: var(--accent-color);
+    font-size: 0.75rem;
+    font-weight: bold;
+}
+
+.suat-chieu-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+/* Card suất chiếu
+.suat-chieu-card {
+    background-color: rgba(229, 9, 20, 0.1);
+    border: 1px solid var(--primary-color);
+    border-radius: 10px;
+    padding: 8px 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 75px;
+}
+
+.suat-chieu-card:hover {
+    background-color: var(--primary-color);
+    transform: scale(1.05);
+}
+
+.suat-chieu-date {
+    color: var(--text-secondary);
+    font-size: 0.6rem;
+}
+
+.suat-chieu-time {
+    color: var(--primary-color);
+    font-size: 0.85rem;
+    font-weight: bold;
+    margin: 3px 0;
+}
+
+.suat-chieu-card:hover .suat-chieu-time {
+    color: white;
+}
+
+.suat-chieu-room {
+    color: var(--text-secondary);
+    font-size: 0.55rem;
+}
+
+.suat-chieu-price {
+    color: var(--accent-color);
+    font-size: 0.7rem;
+    font-weight: bold;
+    margin-top: 3px;
+} */
+
+/* Lịch Chiếu */
+.lich-chieu-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.lich-chieu-title {
+    color: var(--primary-color);
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 30px;
+}
+
+.welcome-banner {
+    background: linear-gradient(135deg, #e50914, #b20710);
+    text-align: center;
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 30px;
+    color: white;
+    font-weight: bold;
+}
+
+.phim-hom-nay {
+    background-color: var(--surface-color);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.phim-hom-nay h2 {
+    color: var(--accent-color);
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+}
+
+.phim-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.phim-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.phim-item:hover {
+    background-color: rgba(229, 9, 20, 0.2);
+}
+
+.gio-chieu {
+    color: var(--accent-color);
+    font-size: 0.8rem;
+}
+
+.khuyen-mai {
+    background-color: rgba(255, 215, 0, 0.15);
+    text-align: center;
+    padding: 12px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    color: var(--accent-color);
+    font-weight: bold;
+}
+
+.xem-them {
+    text-align: center;
+}
+
+.btn-xem-them {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 30px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.btn-xem-them:hover {
+    transform: scale(1.05);
+}
+
+.suat-chieu-room {
+    color: var(--text-secondary);
+    font-size: 0.6rem;
+    white-space: nowrap;    /* Không xuống dòng */
+    overflow: hidden;       /* Ẩn nội dung tràn */
+    text-overflow: ellipsis; /* Thêm dấu ... nếu quá dài */
+    max-width: 80px;        /* Giới hạn chiều rộng */
+}
+
+/* Suất chiếu - dạng grid, nằm ngang và xuống dòng */
+.suat-chieu-list-ngang {
+    display: flex;
+    flex-wrap: wrap;   /* cho xuống dòng */
+    gap: 12px;         /* khoảng cách giữa các ô */
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.suat-chieu-item-ngang {
+    min-width: 95px;
+    padding: 10px 8px;
+    border-radius: 10px;
+}
+
+.suat-chieu-date-ngang {
+    color: var(--text-secondary);
+    font-size: 0.6rem;
+    white-space: nowrap;
+}
+
+.suat-chieu-time-ngang {
+    color: var(--primary-color);
+    font-size: 0.8rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.suat-chieu-room-ngang {
+    color: var(--text-secondary);
+    font-size: 0.55rem;
+    white-space: nowrap;
+}
+
+.suat-chieu-price-ngang {
+    color: var(--accent-color);
+    font-size: 0.65rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.suat-chieu-item-ngang:hover {
+    background-color: rgba(229, 9, 20, 0.15) !important;
+    border-color: var(--primary-color) !important;
+}
+
+.suat-chieu-item-ngang:hover {
+    background-color: var(--primary-color);
+    transform: scale(1.05);
+}
+
+.suat-chieu-item-ngang:hover .suat-chieu-time-ngang {
+    color: white;
+}
+
+.phim-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.phim-ten {
+    min-height: 50px;
+}
+
+.phim-meta {
+    min-height: 35px;
+}
+
+.phim-rap {
+    margin-top: auto;
+}
+
+/* ========== LỊCH CHIẾU CHUYÊN NGHIỆP ========== */
+
+.lich-chieu-chuyen-nghiep {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Hero Banner */
+.hero-banner {
+    background: linear-gradient(135deg, #e50914, #b20710);
+    height: 350px;
+    border-radius: 24px;
+    margin: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-banner::before {
+    content: "🎬";
+    position: absolute;
+    font-size: 200px;
+    opacity: 0.1;
+    bottom: -50px;
+    right: -50px;
+}
+
+.hero-title {
+    font-size: 3rem;
+    font-weight: bold;
+    margin-bottom: 16px;
+    letter-spacing: 2px;
+}
+
+.hero-subtitle {
+    font-size: 1.2rem;
+    margin-bottom: 24px;
+    opacity: 0.9;
+}
+
+.hero-btn {
+    background-color: white;
+    color: #e50914;
+    border: none;
+    padding: 14px 32px;
+    border-radius: 40px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.hero-btn:hover {
+    transform: scale(1.05);
+}
+
+/* Khuyến mãi */
+.khuyen-mai-section {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    padding: 0 20px;
+    margin: 40px 0;
+}
+
+.khuyen-mai-card {
+    background: linear-gradient(135deg, rgba(229, 9, 20, 0.1), rgba(31, 31, 31, 0.95));
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    border: 1px solid rgba(229, 9, 20, 0.3);
+}
+
+.khuyen-mai-icon {
+    font-size: 2.5rem;
+}
+
+.khuyen-mai-card h3 {
+    color: var(--primary-color);
+    font-size: 1rem;
+    margin-bottom: 4px;
+}
+
+.khuyen-mai-card p {
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+}
+
+/* Giờ vàng */
+.gio-vang-section {
+    padding: 0 20px;
+    margin-bottom: 40px;
+}
+
+.gio-vang-list {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.gio-vang-item {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 24px;
+    border-radius: 12px;
+    color: white;
+}
+
+.gio-vang-icon {
+    font-size: 1.8rem;
+}
+
+.gio-vang-time {
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+
+.gio-vang-discount {
+    font-size: 0.8rem;
+    opacity: 0.9;
+}
+
+/* Phim đang chiếu */
+.phim-dang-chieu-section {
+    padding: 0 20px;
+    margin-bottom: 40px;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.section-title {
+    color: var(--accent-color);
+    font-size: 1.5rem;
+    font-weight: bold;
+    border-left: 4px solid var(--primary-color);
+    padding-left: 12px;
+}
+
+.xem-tat-ca-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.xem-tat-ca-btn:hover {
+    color: var(--primary-color);
+}
+
+.phim-dang-chieu-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.phim-dang-chieu-card {
+    background-color: var(--surface-color);
+    border-radius: 16px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+}
+
+.phim-dang-chieu-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(229, 9, 20, 0.2);
+}
+
+.phim-card-poster {
+    width: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.phim-card-emoji {
+    font-size: 3rem;
+}
+
+.phim-card-info {
+    flex: 1;
+    padding: 12px;
+}
+
+.phim-card-title {
+    color: white;
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+}
+
+.phim-card-times {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+}
+
+.time-chip {
+    background-color: rgba(229, 9, 20, 0.2);
+    border-radius: 20px;
+    padding: 2px 8px;
+    font-size: 0.7rem;
+    color: var(--primary-color);
+}
+
+.phim-card-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.65rem;
+    color: var(--text-secondary);
+}
+
+.phim-card-price {
+    color: var(--accent-color);
+    font-weight: bold;
+}
+
+/* Sắp chiếu */
+.sap-chieu-section {
+    padding: 0 20px;
+    margin-bottom: 40px;
+}
+
+.sap-chieu-list {
+    display: flex;
+    gap: 16px;
+}
+
+.sap-chieu-item {
+    flex: 1;
+    background-color: var(--surface-color);
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.sap-chieu-date {
+    color: var(--primary-color);
+    font-weight: bold;
+    font-size: 0.8rem;
+}
+
+.sap-chieu-title {
+    color: white;
+    font-size: 0.9rem;
+}
+
+.sap-chieu-btn {
+    background-color: transparent;
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    cursor: pointer;
+}
+
+.sap-chieu-btn:hover {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 1.8rem;
+    }
+    
+    .khuyen-mai-section {
+        grid-template-columns: 1fr;
+    }
+    
+    .phim-dang-chieu-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .sap-chieu-list {
+        flex-direction: column;
+    }
+    
+    .gio-vang-list {
+        flex-direction: column;
+    }
+}
+
+/* Hero Banner - chỉ hiển thị ảnh nền */
+.hero-banner {
+    height: 450px;
+    border-radius: 24px;
+    margin: 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-bg-cinema {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+}
+
+/* Không có lớp phủ, không có chữ thêm vào */
+
+/* Phim đang chiếu */
+.phim-dang-chieu-section {
+    padding: 0 20px;
+    margin: 40px 0;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.section-title {
+    color: var(--accent-color);
+    font-size: 1.5rem;
+    font-weight: bold;
+    border-left: 4px solid var(--primary-color);
+    padding-left: 12px;
+}
+
+.xem-tat-ca-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.xem-tat-ca-btn:hover {
+    color: var(--primary-color);
+}
+
+.phim-dang-chieu-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.phim-dang-chieu-card {
+    background-color: var(--surface-color);
+    border-radius: 16px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+}
+
+.phim-dang-chieu-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(229, 9, 20, 0.2);
+}
+
+.phim-card-avatar {
+    width: 65px;
+    height: 65px;
+    flex-shrink: 0;
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 12px;
+}
+
+.phim-card-img-small {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.phim-card-info {
+    flex: 1;
+    padding: 12px 12px 12px 0;
+}
+
+.phim-card-title {
+    color: white;
+    font-size: 0.85rem;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.phim-card-times {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+}
+
+.time-chip {
+    background-color: rgba(229, 9, 20, 0.2);
+    border-radius: 20px;
+    padding: 2px 8px;
+    font-size: 0.65rem;
+    color: var(--primary-color);
+}
+
+.phim-card-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.6rem;
+    color: var(--text-secondary);
+}
+
+.phim-card-price {
+    color: var(--accent-color);
+    font-weight: bold;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .hero-banner {
+        height: 250px;
+    }
+    
+    .phim-dang-chieu-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .phim-dang-chieu-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.gio-chieu {
+    display: inline-block;
+    background-color: rgba(229, 9, 20, 0.15);
+    border: 1px solid #e50914;
+    color: #e50914;
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    margin-right: 8px;
+    transition: all 0.2s;
+}
+.gio-chieu:hover {
+    background-color: #e50914;
+    color: white;
+    cursor: pointer;
+}
+
+.phim-item {
+    transition: transform 0.2s, box-shadow 0.2s;
+    background-color: #1f1f1f;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+}
+.phim-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+}
+
+/* Promo Banner - Khuyến mãi */
+.promo-banner {
+    background: linear-gradient(135deg, #e50914, #b20710);
+    margin: 20px;
+    padding: 16px 24px;
+    border-radius: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.01); }
+}
+
+.promo-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.promo-icon {
+    font-size: 1.5rem;
+}
+
+.promo-text {
+    font-weight: bold;
+    font-size: 1rem;
+    letter-spacing: 1px;
+}
+
+.promo-date {
+    background-color: rgba(255, 255, 255, 0.2);
+    padding: 6px 12px;
+    border-radius: 30px;
+    font-size: 0.8rem;
+}
+
+/* Footer Banner */
+.footer-banner {
+    background: linear-gradient(135deg, #1f1f1f, #2a2a2a);
+    margin: 20px;
+    padding: 20px;
+    border-radius: 16px;
+    text-align: center;
+    border: 1px solid rgba(229, 9, 20, 0.3);
+}
+
+.footer-banner-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    font-weight: bold;
+    color: var(--accent-color);
+}
+
+.footer-banner-icon {
+    font-size: 1.3rem;
+}
+
+/* Cải thiện card phim */
+.phim-dang-chieu-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.phim-dang-chieu-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(229, 9, 20, 0.3);
+}
+
+.phim-card-title {
+    transition: color 0.2s;
+}
+
+.phim-dang-chieu-card:hover .phim-card-title {
+    color: var(--primary-color);
+}
+
+.time-chip {
+    transition: all 0.2s;
+}
+
+.time-chip:hover {
+    background-color: var(--primary-color);
+    color: white;
+    transform: scale(1.05);
+}
+
+.phim-room {
+    color: var(--text-secondary);
+    font-size: 0.65rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .promo-banner {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .promo-text {
+        font-size: 0.85rem;
+    }
+    
+    .footer-banner-content {
+        font-size: 0.8rem;
+    }
+}
+
+/* Promo Banner + Button kế bên */
+.promo-banner-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    margin: 20px;
+    flex-wrap: wrap;
+}
+
+.promo-banner {
+    flex: 2;
+    background: linear-gradient(135deg, #e50914, #b20710);
+    padding: 16px 24px;
+    border-radius: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.01); }
+}
+
+.promo-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.promo-icon {
+    font-size: 1.5rem;
+}
+
+.promo-text {
+    font-weight: bold;
+    font-size: 1rem;
+    letter-spacing: 1px;
+}
+
+.promo-date {
+    background-color: rgba(255, 255, 255, 0.2);
+    padding: 6px 12px;
+    border-radius: 30px;
+    font-size: 0.8rem;
+}
+
+/* Button đặt vé kế bên promo banner */
+.promo-datve-btn {
+    flex: 1;
+    background: linear-gradient(135deg, #ffd700, #ffaa00);
+    color: #1f1f1f;
+    border: none;
+    padding: 16px 24px;
+    border-radius: 16px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    white-space: nowrap;
+}
+
+.promo-datve-btn:hover {
+    transform: scale(1.02);
+    box-shadow: 0 8px 25px rgba(255, 215, 0, 0.4);
+    background: linear-gradient(135deg, #ffaa00, #ffd700);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .promo-banner-wrapper {
+        flex-direction: column;
+    }
+    
+    .promo-datve-btn {
+        width: 100%;
+        white-space: normal;
+    }
+    
+    .promo-banner {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .promo-text {
+        font-size: 0.85rem;
+    }
+}

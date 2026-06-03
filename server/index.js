@@ -25,6 +25,9 @@ app.use(express.urlencoded({ extended: true }));
 // Routes
 app.use("/api/auth", require("./routes/authRoutes"));
 
+const showtimeRoutes = require("./routes/showtimeRoutes");
+
+app.use("/api/showtimes", showtimeRoutes);
 // Test route
 app.get("/api/test", (req, res) => {
 	res.json({ message: "API đang hoạt động!" });
@@ -44,3 +47,4 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
 	console.log(`Server đang chạy tại http://localhost:${PORT}`);
 });
+

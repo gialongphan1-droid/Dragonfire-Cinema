@@ -19,7 +19,7 @@ const Header = () => {
 			</h1>
 
 			<nav className="nav">
-				<a href="/movies" className="nav-link">
+				<a href="/lich-chieu" className="nav-link">  {/* ← SỬA THÀNH /lich-chieu */}
 					Lịch Chiếu
 				</a>
 				<a href="/showtimes" className="nav-link">
