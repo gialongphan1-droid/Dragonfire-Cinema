@@ -14,6 +14,11 @@ import ShowtimeList from "./pages/showtime/ShowtimeList";
 import Booking from "./pages/booking/Booking";
 import MyBookings from "./pages/booking/MyBookings";
 
+import LichChieu from "./pages/showtime/LichChieu";
+import RoomList from "./pages/showtime/RoomList";
+import RoomForm from "./pages/showtime/RoomForm";
+import ShowTimeDetails from "./pages/showtime/ShowTimeDetails";
+import ShowTimeForm from "./pages/showtime/ShowTimeForm";
 import "./App.css";
 
 function App() {
@@ -38,6 +43,25 @@ function App() {
               </PrivateRoute>
             }
           />
+           <Route path="/lich-chieu" element={<LichChieu />} />
+          <Route path="/showtimes" element={<ShowtimeList />} />
+          <Route path="/showtimes/:id" element={<ShowTimeDetails />} />
+          <Route
+            path="/showtimes/add"
+            element={
+              <PrivateRoute adminOnly={true}>
+                <ShowTimeForm />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/showtimes/edit/:id"
+            element={
+              <PrivateRoute adminOnly={true}>
+                <ShowTimeForm />
+              </PrivateRoute>
+            }
+          />
 		  <Route
   path="/admin/showtimes"
   element={
@@ -46,6 +70,23 @@ function App() {
     </PrivateRoute>
   }
 />
+<Route path="/rooms" element={<RoomList />} />
+          <Route
+            path="/rooms/add"
+            element={
+              <PrivateRoute adminOnly={true}>
+                <RoomForm />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/rooms/edit/:id"
+            element={
+              <PrivateRoute adminOnly={true}>
+                <RoomForm />
+              </PrivateRoute>
+            }
+          />
 
 <Route path="/my-bookings" element={
   <PrivateRoute>

@@ -355,6 +355,197 @@ button:disabled {
 	margin: 0 auto;
 }
 
+/* Lịch chiếu - ShowTime Grid */
+.phim-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+	gap: 25px;
+	padding: 20px;
+	max-width: 1200px;
+	margin: 0 auto;
+}
+
+.phim-card {
+	background-color: var(--surface-color);
+	border-radius: 10px;
+	overflow: hidden;
+	transition: transform 0.3s;
+	cursor: pointer;
+}
+
+.phim-card:hover {
+	transform: translateY(-5px);
+	box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+}
+
+.phim-image-container {
+	width: 100%;
+	aspect-ratio: 2 / 3;
+	overflow: hidden;
+	border-radius: 10px;
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background-color: #333;
+}
+
+.phim-image {
+	width: 100%;
+	height: 100%;
+	aspect-ratio: 2 / 3;
+	object-fit: cover;
+	background-color: #333;
+	border-radius: 10px;
+}
+
+.phim-info {
+	padding: 15px;
+}
+
+.phim-ten {
+	font-size: 16px;
+	font-weight: bold;
+	margin-bottom: 8px;
+	line-height: 1.3;
+	color: var(--text-primary);
+}
+
+.phim-meta {
+	font-size: 12px;
+	color: var(--text-secondary);
+	margin-bottom: 6px;
+}
+
+.phim-rap {
+	font-size: 12px;
+	color: var(--text-secondary);
+}
+
+.phim-overlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: rgba(0, 0, 0, 0);
+	opacity: 0;
+	transition: all 0.3s;
+}
+
+.phim-image-container:hover .phim-overlay {
+	background: rgba(0, 0, 0, 0.3);
+	opacity: 1;
+}
+
+.phim-rating {
+	position: absolute;
+	top: 8px;
+	right: 8px;
+	background-color: var(--primary-color);
+	color: white;
+	padding: 4px 8px;
+	border-radius: 4px;
+	font-size: 13px;
+	font-weight: bold;
+}
+
+/* ============================================ */
+/* SHOWTIME SELECTION - Suất chiếu khung */
+/* ============================================ */
+
+.suat-chieu-container {
+	margin-top: 15px;
+	background-color: rgba(0, 0, 0, 0.3);
+	border-radius: 12px;
+	padding: 15px;
+	border: 1px solid rgba(229, 9, 20, 0.3);
+}
+
+.suat-chieu-header {
+	display: flex;
+	align-items: center;
+	margin-bottom: 12px;
+	gap: 10px;
+}
+
+.suat-chieu-title {
+	font-size: 14px;
+	font-weight: 600;
+	color: var(--primary-color);
+	text-transform: uppercase;
+}
+
+.suat-chieu-list-ngang {
+	display: flex;
+	gap: 6px;
+	flex-wrap: wrap;
+	padding: 8px 0;
+	justify-content: flex-start;
+	align-items: flex-start;
+}
+
+.suat-chieu-item-ngang {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 3px;
+	padding: 10px 8px;
+	background-color: var(--surface-color);
+	border: 2px solid rgba(229, 9, 20, 0.4);
+	border-radius: 8px;
+	cursor: pointer;
+	white-space: normal;
+	text-align: center;
+	transition: all 0.3s ease;
+	flex-shrink: 0;
+	width: 100px;
+	min-width: 100px;
+}
+
+.suat-chieu-item-ngang:hover {
+	border-color: var(--primary-color);
+	background-color: rgba(229, 9, 20, 0.1);
+	transform: translateY(-2px);
+	box-shadow: 0 4px 12px rgba(229, 9, 20, 0.2);
+}
+
+.suat-chieu-date-ngang {
+	font-size: 11px;
+	color: var(--text-secondary);
+	font-weight: 500;
+}
+
+.suat-chieu-time-ngang {
+	font-size: 15px;
+	font-weight: bold;
+	color: var(--primary-color);
+}
+
+.suat-chieu-room-ngang {
+	font-size: 12px;
+	color: var(--text-primary);
+	font-weight: 500;
+}
+
+.suat-chieu-price-ngang {
+	font-size: 13px;
+	color: var(--accent-color);
+	font-weight: bold;
+}
+
+.lich-chieu-container {
+	padding: 20px;
+}
+
+.lich-chieu-title {
+	font-size: 24px;
+	font-weight: bold;
+	margin-bottom: 20px;
+	color: var(--primary-color);
+}
+
 .movie-card {
 	background-color: var(--surface-color);
 	border-radius: 10px;
@@ -595,12 +786,9 @@ button:disabled {
 .seat.available {
 	background-color: #4caf50;
 }
-.seat.vip {
-  background-color: #ffc107; /* vàng */
-}
 
 .seat.selected {
-  background-color: #9e9e9e; /* xám */
+	background-color: var(--primary-color);
 }
 
 .seat.booked {
@@ -1022,9 +1210,32 @@ button:disabled {
 	}
 
 	.movie-grid,
-	.product-grid {
-		grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-		gap: 15px;
+	.product-grid,
+	.phim-grid {
+		grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+		gap: 12px;
+		padding: 12px;
+	}
+
+	.phim-image-container {
+		aspect-ratio: 2 / 3;
+	}
+
+	.phim-image {
+		aspect-ratio: 2 / 3;
+	}
+
+	.phim-info {
+		padding: 10px;
+	}
+
+	.phim-ten {
+		font-size: 13px;
+	}
+
+	.phim-meta,
+	.phim-rap {
+		font-size: 11px;
 	}
 
 	.movie-poster {
@@ -1546,4 +1757,111 @@ button:disabled {
     flex-direction: column;
     text-align: center;
   }
+}
+
+/* Nhóm phim theo suất chiếu */
+.movie-showtime-group {
+  background-color: var(--surface-color);
+  border-radius: 16px;
+  margin-bottom: 30px;
+  overflow: hidden;
+}
+
+.movie-group-header {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+  background: linear-gradient(135deg, rgba(229, 9, 20, 0.1), rgba(31, 31, 31, 0.95));
+}
+
+.movie-group-poster {
+  width: 80px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.movie-group-title {
+  color: var(--primary-color);
+  font-size: 1.3rem;
+  margin-bottom: 8px;
+}
+
+.movie-group-meta {
+  display: flex;
+  gap: 15px;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  flex-wrap: wrap;
+}
+
+.showtimes-group {
+  padding: 20px;
+}
+
+.showtimes-group-title {
+  color: var(--accent-color);
+  font-size: 1rem;
+  margin-bottom: 15px;
+}
+
+.showtimes-group-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.showtime-group-card {
+  background-color: rgba(229, 9, 20, 0.1);
+  border: 1px solid var(--primary-color);
+  border-radius: 10px;
+  padding: 10px 15px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 110px;
+}
+
+.showtime-group-card:hover {
+  background-color: var(--primary-color);
+  transform: scale(1.05);
+}
+
+.showtime-group-time {
+  color: var(--primary-color);
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+.showtime-group-card:hover .showtime-group-time {
+  color: white;
+}
+
+.showtime-group-date {
+  color: var(--text-secondary);
+  font-size: 0.7rem;
+  margin-top: 3px;
+}
+
+.showtime-group-room {
+  color: var(--text-secondary);
+  font-size: 0.65rem;
+  margin-top: 3px;
+}
+
+.showtime-group-price {
+  color: var(--accent-color);
+  font-size: 0.75rem;
+  font-weight: bold;
+  margin-top: 5px;
+}
+
+.showtime-group-seats {
+  font-size: 0.65rem;
+  margin-top: 5px;
+  color: var(--success-color);
+}
+
+.showtime-group-seats.seats-low {
+  color: var(--error-color);
 }
