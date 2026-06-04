@@ -1,46 +1,36 @@
 const mongoose = require("mongoose");
 
-const ShowtimeSchema = new mongoose.Schema({
-  movieId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Movie",
-    required: true
-  },
-  room: {
-    type: String,
-    required: true,
-    enum: ["Phòng 1 - IMAX", "Phòng 2 - 2D", "Phòng 3 - 2D", "Phòng 4 - 2D", "Phòng 5 - 3D", "Phòng 6 - VIP"]
-  },
-  date: {
-    type: Date,
-    required: true
-  },
-  time: {
-    type: String,
-    required: true
-  },
-  price: {
-    type: Number,
-    required: true,
-    min: 50000
-  },
-  availableSeats: {
-    type: Number,
-    default: 100
-  },
-  bookedSeats: {
-    type: [String],
-    default: []
-  },
-  status: {
-    type: String,
-    enum: ["available", "sold_out", "cancelled"],
-    default: "available"
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  }
-});
+const ShowtimeSchema = new mongoose.Schema(
+	{
+		movieId: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: "Movie",
+			required: true,
+		},
+		movieTitle: String,
+		cinemaName: { type: String, required: true },
+		roomId: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: "Room",
+			required: true,
+		},
+		roomName: { type: String, required: true },
+		startTime: { type: Date, required: true },
+		endTime: { type: Date, required: true },
+		price: { type: Number, required: true },
+		seats: [
+			{
+				seatNumber: String,
+				seatType: {
+					type: String,
+					enum: ["Standard", "VIP", "Sweetbox"],
+					default: "Standard",
+				},
+				isBooked: { type: Boolean, default: false },
+			},
+		],
+	},
+	{ timestamps: true },
+);
 
 module.exports = mongoose.model("Showtime", ShowtimeSchema);

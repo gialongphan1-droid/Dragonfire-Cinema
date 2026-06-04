@@ -6,25 +6,61 @@ const API_URL = "http://localhost:5000/api";
 const ShowtimeAdmin = () => {
   const [showtimes, setShowtimes] = useState([]);
   const [movies, setMovies] = useState([]);
+  const [rooms, setRooms] = useState([]); // ✅ THÊM STATE CHO ROOMS
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingShowtime, setEditingShowtime] = useState(null);
   const [formData, setFormData] = useState({
     movieId: "",
-    room: "",
+    roomId: "",        // ✅ ĐỔI room THÀNH roomId
+    roomName: "",      // ✅ THÊM roomName
     date: "",
     time: "",
     price: ""
   });
   const [errors, setErrors] = useState({});
+  const [serverTime, setServerTime] = useState(null);
 
   const token = localStorage.getItem("token");
   const today = new Date().toISOString().split("T")[0];
+
+  // Lấy thời gian thực từ server
+  useEffect(() => {
+    fetchServerTime();
+  }, []);
+
+  // Lấy danh sách phòng
+  useEffect(() => {
+    fetchRooms();
+  }, []);
 
   useEffect(() => {
     fetchShowtimes();
     fetchMovies();
   }, []);
+
+  const fetchServerTime = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/current-time`);
+      if (response.data.success) {
+        setServerTime(new Date(response.data.currentTime));
+      }
+    } catch (err) {
+      console.error("Lỗi lấy thời gian server:", err);
+      setServerTime(new Date());
+    }
+  };
+
+  const fetchRooms = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/rooms`);
+      if (response.data.success) {
+        setRooms(response.data.data);
+      }
+    } catch (error) {
+      console.error("Lỗi tải phòng:", error);
+    }
+  };
 
   const fetchShowtimes = async () => {
     try {
@@ -50,15 +86,29 @@ const ShowtimeAdmin = () => {
     }
   };
 
+  // Kiểm tra thời gian có hợp lệ không (dùng server time)
+  const isValidDateTime = (date, time) => {
+    if (!date || !time) return false;
+    const dateTimeString = `${date}T${time}:00`;
+    const selectedDateTime = new Date(dateTimeString);
+    const now = serverTime || new Date();
+    return selectedDateTime > now;
+  };
+
   const validateForm = () => {
     const newErrors = {};
     if (!formData.movieId) newErrors.movieId = "Vui lòng chọn phim!";
-    if (!formData.room) newErrors.room = "Vui lòng chọn phòng chiếu!";
+    if (!formData.roomId) newErrors.roomId = "Vui lòng chọn phòng chiếu!";
     if (!formData.date) newErrors.date = "Vui lòng chọn ngày chiếu!";
     if (!formData.time) newErrors.time = "Vui lòng chọn giờ chiếu!";
     if (!formData.price || formData.price < 50000) {
       newErrors.price = "Giá vé phải từ 50,000đ trở lên!";
     }
+    
+    if (formData.date && formData.time && !isValidDateTime(formData.date, formData.time)) {
+      newErrors.time = "❌ Thời gian chiếu không hợp lệ! Phải chọn thời gian trong tương lai.";
+    }
+    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -69,26 +119,39 @@ const ShowtimeAdmin = () => {
 
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      let response;
+      
+      // ✅ TẠO PAYLOAD ĐÚNG VỚI BACKEND
+      const payload = {
+        movieId: formData.movieId,
+        cinemaName: "Dragonfire Cinema",           // ← THÊM cinemaName
+        roomId: formData.roomId,                   // ← roomId từ database
+        startTime: new Date(`${formData.date}T${formData.time}:00`).toISOString(),
+        price: parseInt(formData.price),
+        seats: []
+      };
 
+      console.log("📦 Payload gửi đi:", payload);
+
+      let response;
       if (editingShowtime) {
         response = await axios.put(
           `${API_URL}/showtimes/${editingShowtime._id}`,
-          formData,
+          payload,
           config
         );
       } else {
-        response = await axios.post(`${API_URL}/showtimes/create`, formData, config);
+        response = await axios.post(`${API_URL}/showtimes`, payload, config);
       }
 
       if (response.data.success) {
         alert(response.data.message);
         setShowModal(false);
         setEditingShowtime(null);
-        setFormData({ movieId: "", room: "", date: "", time: "", price: "" });
+        setFormData({ movieId: "", roomId: "", roomName: "", date: "", time: "", price: "" });
         fetchShowtimes();
       }
     } catch (error) {
+      console.error("❌ Lỗi chi tiết:", error.response?.data);
       alert(error.response?.data?.message || "Có lỗi xảy ra");
     }
   };
@@ -111,11 +174,12 @@ const ShowtimeAdmin = () => {
   const handleEdit = (showtime) => {
     setEditingShowtime(showtime);
     setFormData({
-      movieId: showtime.movieId._id,
-      room: showtime.room,
-      date: showtime.date?.split("T")[0] || "",
-      time: showtime.time,
-      price: showtime.price
+      movieId: showtime.movieId?._id || "",
+      roomId: showtime.roomId?._id || "",
+      roomName: showtime.roomName || "",
+      date: showtime.startTime ? new Date(showtime.startTime).toISOString().split("T")[0] : "",
+      time: showtime.startTime ? new Date(showtime.startTime).toTimeString().slice(0, 5) : "",
+      price: showtime.price || ""
     });
     setShowModal(true);
   };
@@ -154,9 +218,9 @@ const ShowtimeAdmin = () => {
               <tr key={st._id}>
                 <td>{index + 1}</td>
                 <td>{st.movieId?.title || "Không xác định"}</td>
-                <td>{st.room}</td>
-                <td>{st.date ? new Date(st.date).toLocaleDateString("vi-VN") : "Chưa có ngày"}</td>
-                <td>{st.time}</td>
+                <td>{st.roomName}</td>
+                <td>{st.startTime ? new Date(st.startTime).toLocaleDateString("vi-VN") : "Chưa có ngày"}</td>
+                <td>{st.startTime ? new Date(st.startTime).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" }) : "Chưa có giờ"}</td>
                 <td>{formatCurrency(st.price)}</td>
                 <td>{(st.availableSeats || 100) - (st.bookedSeats?.length || 0)}/{st.availableSeats || 100}</td>
                 <td>
@@ -204,19 +268,25 @@ const ShowtimeAdmin = () => {
               <div className="form-group">
                 <label>Phòng chiếu *</label>
                 <select
-                  className={`form-control ${errors.room ? "error" : ""}`}
-                  value={formData.room}
-                  onChange={(e) => setFormData({ ...formData, room: e.target.value })}
+                  className={`form-control ${errors.roomId ? "error" : ""}`}
+                  value={formData.roomId}
+                  onChange={(e) => {
+                    const selectedRoom = rooms.find(r => r._id === e.target.value);
+                    setFormData({ 
+                      ...formData, 
+                      roomId: selectedRoom?._id || "",
+                      roomName: selectedRoom?.name || ""
+                    });
+                  }}
                 >
                   <option value="">-- Chọn phòng --</option>
-                  <option value="Phòng 1 - IMAX">Phòng 1 - IMAX</option>
-                  <option value="Phòng 2 - 2D">Phòng 2 - 2D</option>
-                  <option value="Phòng 3 - 2D">Phòng 3 - 2D</option>
-                  <option value="Phòng 4 - 2D">Phòng 4 - 2D</option>
-                  <option value="Phòng 5 - 3D">Phòng 5 - 3D</option>
-                  <option value="Phòng 6 - VIP">Phòng 6 - VIP</option>
+                  {rooms.map(room => (
+                    <option key={room._id} value={room._id}>
+                      {room.name} ({room.type}) - {room.status === "active" ? "✅ Hoạt động" : "🔧 Bảo trì"}
+                    </option>
+                  ))}
                 </select>
-                {errors.room && <span className="error-text">{errors.room}</span>}
+                {errors.roomId && <span className="error-text">{errors.roomId}</span>}
               </div>
 
               <div className="form-group">
