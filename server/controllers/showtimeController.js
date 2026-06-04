@@ -1,17 +1,21 @@
 const Showtime = require("../models/Showtime");
 const Movie = require("../models/Movie");
 
+
+
 // Lấy tất cả suất chiếu (có populate thông tin phim)
 const getShowtimes = async (req, res) => {
   try {
     const showtimes = await Showtime.find()
       .populate("movieId", "title poster duration rating")
       .sort({ date: 1, time: 1 });
-    res.json({ success: true, message: "Lấy danh sách suất chiếu thành công!", data: showtimes });
+      // Thêm availableSeats vào mỗi showtime
+         res.json({ success: true, message: "Lấy danh sách suất chiếu thành công!", data: showtimes });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+ 
 
 // Lấy suất chiếu theo phim
 const getShowtimesByMovie = async (req, res) => {

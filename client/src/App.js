@@ -12,6 +12,7 @@ import PrivateRoute from "./components/PrivateRoute";
 import ShowtimeAdmin from "./pages/showtime/ShowtimeAdmin";
 import ShowtimeList from "./pages/showtime/ShowtimeList";
 import Booking from "./pages/booking/Booking";
+import MyBookings from "./pages/booking/MyBookings";
 
 import "./App.css";
 
@@ -45,6 +46,12 @@ function App() {
     </PrivateRoute>
   }
 />
+
+<Route path="/my-bookings" element={
+  <PrivateRoute>
+    <MyBookings />
+  </PrivateRoute>
+} />
 
         </Routes>
       </main>
