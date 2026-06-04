@@ -1,4 +1,4 @@
-# 🎨 HƯỚNG DẪN CSS CHUNG - DRAGONFIRE CINEMA
+![alt text](image.png)# 🎨 HƯỚNG DẪN CSS CHUNG - DRAGONFIRE CINEMA
 
 ## 📌 NGUYÊN TẮC CƠ BẢN
 
