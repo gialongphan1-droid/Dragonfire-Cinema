@@ -9,19 +9,24 @@ const ShowtimeSchema = new mongoose.Schema(
 		},
 		movieTitle: String,
 		cinemaName: { type: String, required: true },
+		roomId: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: "Room",
+			required: true,
+		},
 		roomName: { type: String, required: true },
 		startTime: { type: Date, required: true },
 		endTime: { type: Date, required: true },
-		price: { type: Number, required: true }, // Giá vé gốc của suất này
+		price: { type: Number, required: true },
 		seats: [
 			{
-				seatNumber: String, // 'A1', 'A2', 'B1'...
+				seatNumber: String,
 				seatType: {
 					type: String,
 					enum: ["Standard", "VIP", "Sweetbox"],
 					default: "Standard",
 				},
-				isBooked: { type: Boolean, default: false }, // true là đã bán (Đỏ), false là trống (Trắng)
+				isBooked: { type: Boolean, default: false },
 			},
 		],
 	},

@@ -1,47 +1,57 @@
 const express = require("express");
+const mongoose = require("mongoose");
 const cors = require("cors");
-require("dotenv").config();
-const connectDB = require("./config/db");
+const dotenv = require("dotenv");
 
-// IMPORT CÁC FILE ROUTES CỦA CÁC THÀNH VIÊN VÀO ĐÂY
-const authRoutes = require("./routes/authRoutes");
-const bookingRoutes = require("./routes/bookingRoutes");
-const movieRoutes = require("./routes/movieRoutes");
-const paymentRoutes = require("./routes/paymentRoutes");
-const productRoutes = require("./routes/productRoutes");
-const showtimeRoutes = require("./routes/showtimeRoutes");
+// Load env variables
+dotenv.config();
+
+// Connect to database
+const connectDB = require("./config/db");
+connectDB();
 
 const app = express();
 
-// Kết nối DB
-connectDB();
-
-// MIDDLEWARES CẤU HÌNH HỆ THỐNG
-app.use(express.json());
-
-// Giới hạn CORS chỉ cho phép duy nhất Frontend của nhóm truy cập
+// Middleware
 app.use(
 	cors({
 		origin: "http://localhost:3000",
-		methods: ["GET", "POST", "PUT", "DELETE"],
 		credentials: true,
 	}),
 );
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// KHAI BÁO TIỀN TỐ ĐƯỜNG DẪN (URL) DẠNG SỐ ÍT NHẤT QUÁN
-app.use("/api/auth", authRoutes); // Long Phan
-app.use("/api/booking", bookingRoutes); // Hiếu
-app.use("/api/movie", movieRoutes); // Lê Long
-app.use("/api/payment", paymentRoutes); // Đạt
-app.use("/api/product", productRoutes); // Kỷ
-app.use("/api/showtime", showtimeRoutes); // Hoàng
+// Routes
+app.use("/api/auth", require("./routes/authRoutes"));
+// Sau các route khác
+const movieRoutes = require("./routes/movieRoutes");
+app.use("/api/movies", movieRoutes);
+// lịch chiếu 
+const showtimeRoutes = require("./routes/showtimeRoutes");
+app.use("/api/showtimes", showtimeRoutes);
+// dặt vé
+const bookingRoutes = require("./routes/bookingRoutes");
+app.use("/api/bookings", bookingRoutes);
+const roomRoutes = require("./routes/roomRoutes");
+app.use("/api/rooms", roomRoutes);
 
-// Cấu hình trang test nhanh khi vào http://localhost:5000/
-app.get("/", (req, res) => {
-	res.send("🚀 Server Dragonfire Cinema đang chạy mượt mà và bảo mật!");
+// Test route
+app.get("/api/test", (req, res) => {
+	res.json({ message: "API đang hoạt động!" });
 });
 
+// Error handling middleware
+app.use((err, req, res, next) => {
+	console.error(err.stack);
+	res.status(500).json({
+		success: false,
+		message: "Có lỗi xảy ra từ server!",
+	});
+});
+
+// Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-	console.log(`🚀 Server đang chạy tại: http://localhost:${PORT}`);
+	console.log(`Server đang chạy tại http://localhost:${PORT}`);
 });
