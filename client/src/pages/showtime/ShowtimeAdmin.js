@@ -184,10 +184,6 @@ const ShowtimeAdmin = () => {
     setShowModal(true);
   };
 
-  const formatCurrency = (n) => {
-    return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(n);
-  };
-
   if (loading) return <div className="loading text-center mt-5">Đang tải...</div>;
 
   return (
@@ -208,7 +204,7 @@ const ShowtimeAdmin = () => {
               <th>Phòng chiếu</th>
               <th>Ngày chiếu</th>
               <th>Giờ chiếu</th>
-              <th>Giá vé</th>
+              
               <th>Ghế trống</th>
               <th>Hành động</th>
             </tr>
@@ -221,7 +217,7 @@ const ShowtimeAdmin = () => {
                 <td>{st.roomName}</td>
                 <td>{st.startTime ? new Date(st.startTime).toLocaleDateString("vi-VN") : "Chưa có ngày"}</td>
                 <td>{st.startTime ? new Date(st.startTime).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" }) : "Chưa có giờ"}</td>
-                <td>{formatCurrency(st.price)}</td>
+                
                 <td>{(st.availableSeats || 100) - (st.bookedSeats?.length || 0)}/{st.availableSeats || 100}</td>
                 <td>
                   <button
