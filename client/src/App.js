@@ -24,6 +24,14 @@ function App() {
 					}
 				/>
 				<Route
+          path="/payment"
+          element={
+            <PrivateRoute>
+              <PaymentPage />
+            </PrivateRoute>
+          }
+        />
+				<Route
 					path="/"
 					element={
 						<PrivateRoute>
