@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import Home from "./pages/auth/Home";
-
+import PaymentPage from "./pages/Payment/PaymentPage";
 const PrivateRoute = ({ children }) => {
 	const token = localStorage.getItem("token");
 	return token ? children : <Navigate to="/login" />;
