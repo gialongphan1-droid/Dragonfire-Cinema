@@ -119,15 +119,26 @@ const Booking = () => {
         },
         config
       );
-   if (response.data.success) {
-  // Bất kể API trả về gì, Đạt truyền cứng thông tin để kích hoạt trang Payment
+ if (response.data.success) {
+  // Lấy dữ liệu thật từ response và state hiện tại
+  const bookingData = response.data.data;
+  
+  // Format ngày giờ từ showtime
+  const showtimeDate = new Date(showtime.date).toLocaleDateString("vi-VN");
+  const showtimeTime = showtime.time;
+  
   navigate("/payment", {
     state: {
-      bookingId: "fake-booking-id-12345", // Truyền ID giả để qua vòng kiểm tra
-      movieTitle: "Phim Dragonfire Cinema (Đạt Test)", 
-      showtime: "19:00 - 05/06/2026",
-      seatNumber: "E7, E8",
-      amount: 49000
+      bookingId: bookingData.bookingId,           // ID thật từ API
+      movieTitle: showtime.movieId?.title || "Không có tiêu đề",
+      cinemaName: "DRAGONFIRE Cinema quận 8",
+      cinemaAddress: "180 Cao Lỗ, Phường Chánh Hưng, Hồ Chí Minh 700000",
+      date: showtimeDate,
+      time: showtimeTime,
+      room: showtime.room || "Phòng 1",
+      seatNumber: selectedSeats.map(s => s.id).join(", "),
+      ticketTypes: ticketInfo.tickets,            // { adult, student, senior }
+      totalAmount: totalPrice
     }
   });
 } else {

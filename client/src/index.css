@@ -2063,3 +2063,204 @@ button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
+/* ===== MODAL CSS CỦA ĐẠT ===== */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-container {
+  background: var(--surface-color);
+  border-radius: 16px;
+  width: 90%;
+  max-width: 450px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  animation: modalFadeIn 0.2s ease;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #333;
+}
+
+.modal-header h3 {
+  color: var(--primary-color);
+  margin: 0;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.modal-close:hover {
+  color: var(--primary-color);
+}
+
+.modal-body {
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.modal-body p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #333;
+}
+
+.modal-btn {
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: bold;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+}
+
+.modal-btn-secondary {
+  background: #333;
+  color: #fff;
+}
+
+.modal-btn-secondary:hover {
+  background: #444;
+}
+
+.modal-btn-danger {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+.modal-btn-danger:hover {
+  background: var(--primary-dark);
+}
+
+/* ===== PAYMENT RESULT PAGE CSS CỦA ĐẠT ===== */
+.payment-result-container {
+  min-height: 70vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+}
+
+.payment-result-card {
+  max-width: 500px;
+  width: 100%;
+  background: var(--surface-color);
+  border-radius: 20px;
+  padding: 2rem;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.payment-result-card.success {
+  border-top: 5px solid var(--success-color);
+}
+
+.payment-result-card.failed {
+  border-top: 5px solid var(--error-color);
+}
+
+.payment-result-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+
+.payment-result-title {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.payment-result-card.success .payment-result-title {
+  color: var(--success-color);
+}
+
+.payment-result-card.failed .payment-result-title {
+  color: var(--error-color);
+}
+
+.payment-result-message {
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+.payment-result-info {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.payment-result-info p {
+  margin: 0.5rem 0;
+}
+
+.payment-result-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.payment-result-actions .btn {
+  padding: 0.75rem 1.5rem;
+}
+
+.payment-result-note {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-top: 1rem;
+}
+
+/* ===== PAYMENT PAGE INFO ROWS ===== */
+.payment-info-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px dashed #333;
+}
+
+.payment-info-row span:first-child {
+  color: var(--text-secondary);
+}
+
+.payment-info-row span:last-child {
+  font-weight: bold;
+  color: #fff;
+}

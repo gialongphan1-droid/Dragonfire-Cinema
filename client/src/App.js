@@ -14,6 +14,7 @@ import ShowtimeList from "./pages/showtime/ShowtimeList";
 import Booking from "./pages/booking/Booking";
 import MyBookings from "./pages/booking/MyBookings";
 import PaymentPage from "./pages/Payment/PaymentPage";
+import PaymentResult from "./pages/Payment/PaymentResult";
 
 import LichChieu from "./pages/showtime/LichChieu";
 import RoomList from "./pages/showtime/RoomList";
@@ -36,6 +37,7 @@ function App() {
 		  <Route path="/showtimes" element={<ShowtimeList />} />
 		  <Route path="/booking" element={<Booking />} />
 		  <Route path="/payment" element={<PaymentPage />} />
+      <Route path="/payment/result" element={<PaymentResult />} />
 
           <Route
             path="/admin/movies"

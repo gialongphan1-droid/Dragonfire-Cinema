@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import axios from "axios";
+import ConfirmModal from "../../components/ConfirmModal";
 
 const API_URL = "http://localhost:5000/api";
 
@@ -9,22 +9,11 @@ const PaymentPage = () => {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
-  // Nhận dữ liệu từ trang booking của Hiếu
-  const {
-    bookingId,
-    movieTitle,
-    cinemaName,
-    cinemaAddress,
-    date,
-    time,
-    room,
-    seatNumber,
-    ticketTypes,
-    totalAmount
-  } = location.state || {};
+  const { bookingId, movieTitle, showtime, seatNumber, totalAmount } = location.state || {};
 
   const [paymentMethod, setPaymentMethod] = useState("momo");
   const [loading, setLoading] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
 
   useEffect(() => {
     if (!token) {
@@ -45,160 +34,132 @@ const PaymentPage = () => {
     }).format(price);
   };
 
-  // Hiển thị loại vé đã chọn
-  const renderTicketTypes = () => {
-    if (!ticketTypes) return null;
-    const labels = { adult: "Người lớn", student: "HSSV - U22", senior: "Người cao tuổi" };
-    const prices = { adult: 69000, student: 49000, senior: 50000 };
+  // Bấm THANH TOÁN -> Luôn thành công
+  const handlePaymentSubmit = () => {
+    setLoading(true);
     
-    return (
-      <div className="ticket-types">
-        {Object.entries(ticketTypes).map(([type, quantity]) => {
-          if (quantity > 0) {
-            return (
-              <div key={type} className="ticket-type-item">
-                <span>{labels[type]} x{quantity}</span>
-                <span>{formatPrice(prices[type] * quantity)}</span>
-              </div>
-            );
-          }
-          return null;
-        })}
-      </div>
-    );
+    // Giả lập thời gian xử lý
+    setTimeout(() => {
+      setLoading(false);
+      navigate("/payment/result", {
+        state: {
+          status: "success",
+          message: "Đơn hàng đã được thanh toán thành công! Vé điện tử sẽ được gửi qua email.",
+          bookingId: bookingId
+        }
+      });
+    }, 1000);
   };
 
-  const handlePaymentSubmit = async () => {
-    setLoading(true);
-    try {
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      
-      const response = await axios.post(
-        `${API_URL}/payments/execute`,
-        { bookingId, paymentMethod },
-        config
-      );
-
-      if (response.data.success) {
-        alert("Thanh toán thành công! Vé của bạn đã được xác nhận.");
-        navigate("/my-bookings");
-      } else {
-        alert(response.data.message || "Thanh toán thất bại!");
+  // Bấm HỦY trong modal -> Chuyển sang trang thất bại
+  const handleCancelTransaction = () => {
+    setShowCancelModal(false);
+    navigate("/payment/result", {
+      state: {
+        status: "failed",
+        message: "Bạn đã hủy giao dịch thanh toán. Vui lòng thực hiện lại nếu có nhu cầu."
       }
-    } catch (error) {
-      console.error("Lỗi thanh toán:", error);
-      alert(error.response?.data?.message || "Có lỗi xảy ra trong quá trình xử lý thanh toán!");
-    } finally {
-      setLoading(false);
-    }
+    });
+  };
+
+  // Bấm QUAY LẠI -> Hiện modal xác nhận
+  const handleGoBack = () => {
+    setShowCancelModal(true);
   };
 
   if (!bookingId) return null;
 
   return (
-    <div className="payment-page-container">
-      <div className="payment-grid">
-        
-        {/* Cột trái: Thông tin vé */}
-        <div className="payment-info-card">
-          <h3 className="payment-section-title">🎬 THÔNG TIN VÉ PHIM</h3>
+    <>
+      <div className="payment-page-container">
+        <div className="payment-grid">
           
-          <h4 className="movie-title">{movieTitle}</h4>
-          
-          <div className="cinema-info">
-            <p><strong>🏠 {cinemaName}</strong></p>
-            <p className="cinema-address">{cinemaAddress}</p>
+          {/* Cột trái: Thông tin vé */}
+          <div className="payment-info-card">
+            <h3 className="payment-section-title">🎬 THÔNG TIN VÉ PHIM</h3>
+            <h4 className="movie-title">{movieTitle || "Không xác định"}</h4>
+            <div className="payment-info-row">
+              <span>📅 Suất chiếu:</span>
+              <span>{showtime || "Không xác định"}</span>
+            </div>
+            <div className="payment-info-row">
+              <span>💺 Số ghế:</span>
+              <span>{seatNumber || "Không xác định"}</span>
+            </div>
+            <div className="total-amount">
+              <span>TỔNG TIỀN:</span>
+              <span className="total-price">{formatPrice(totalAmount || 0)}</span>
+            </div>
           </div>
 
-          <div className="showtime-info">
-            <p><strong>⏰ Thời gian:</strong> {time} - {date}</p>
-            <p><strong>🎭 Phòng chiếu:</strong> {room}</p>
-          </div>
+          {/* Cột phải: Phương thức thanh toán */}
+          <div className="payment-methods-card">
+            <h3 className="payment-section-title">💳 CHỌN PHƯƠNG THỨC THANH TOÁN</h3>
+            
+            <div className="payment-methods-list">
+              {/* MoMo */}
+              <label className={`payment-method ${paymentMethod === "momo" ? "active" : ""}`}>
+                <input
+                  type="radio"
+                  name="payment"
+                  value="momo"
+                  checked={paymentMethod === "momo"}
+                  onChange={(e) => setPaymentMethod(e.target.value)}
+                />
+                <span className="payment-icon">🔮</span>
+                <div>
+                  <strong>Ví Điện Tử MoMo</strong>
+                  <span className="payment-desc">Thanh toán nhanh chóng qua ví MoMo</span>
+                </div>
+              </label>
 
-          <div className="seat-info">
-            <p><strong>💺 Số ghế:</strong> {seatNumber}</p>
-          </div>
+              {/* VNPay */}
+              <label className={`payment-method ${paymentMethod === "vnpay" ? "active" : ""}`}>
+                <input
+                  type="radio"
+                  name="payment"
+                  value="vnpay"
+                  checked={paymentMethod === "vnpay"}
+                  onChange={(e) => setPaymentMethod(e.target.value)}
+                />
+                <span className="payment-icon">💳</span>
+                <div>
+                  <strong>VNPay</strong>
+                  <span className="payment-desc">Thanh toán qua thẻ ATM/Visa/Mastercard</span>
+                </div>
+              </label>
+            </div>
 
-          <div className="ticket-info">
-            <p><strong>🎫 Loại vé:</strong></p>
-            {renderTicketTypes()}
-          </div>
-
-          <div className="total-amount">
-            <span>TỔNG CỘNG:</span>
-            <span className="total-price">{formatPrice(totalAmount)}</span>
-          </div>
-        </div>
-
-        {/* Cột phải: Phương thức thanh toán */}
-        <div className="payment-methods-card">
-          <h3 className="payment-section-title">💳 CHỌN PHƯƠNG THỨC THANH TOÁN</h3>
-          
-          <div className="payment-methods-list">
-            {/* Momo */}
-            <label className={`payment-method ${paymentMethod === "momo" ? "active" : ""}`}>
-              <input
-                type="radio"
-                name="payment"
-                value="momo"
-                checked={paymentMethod === "momo"}
-                onChange={(e) => setPaymentMethod(e.target.value)}
-              />
-              <span className="payment-icon">🔮</span>
-              <div>
-                <strong>Ví Điện Tử MoMo</strong>
-                <span className="payment-desc">Thanh toán nhanh chóng qua ví MoMo</span>
-              </div>
-            </label>
-
-            {/* VNPay */}
-            <label className={`payment-method ${paymentMethod === "vnpay" ? "active" : ""}`}>
-              <input
-                type="radio"
-                name="payment"
-                value="vnpay"
-                checked={paymentMethod === "vnpay"}
-                onChange={(e) => setPaymentMethod(e.target.value)}
-              />
-              <span className="payment-icon">💳</span>
-              <div>
-                <strong>VNPay</strong>
-                <span className="payment-desc">Thanh toán qua thẻ ATM nội địa / Visa / Mastercard</span>
-              </div>
-            </label>
-          </div>
-
-          {/* Mã giảm giá (placeholder) */}
-          <div className="discount-section">
-            <input 
-              type="text" 
-              placeholder="Chọn hoặc nhập mã giảm giá" 
-              className="discount-input"
-              disabled
-            />
-            <span className="discount-note">Đăng nhập có mã giảm giá</span>
-          </div>
-
-          {/* Buttons */}
-          <div className="payment-actions">
-            <button 
-              onClick={() => navigate("/showtimes")} 
-              className="btn btn-outline"
-              disabled={loading}
-            >
-              QUAY LẠI
-            </button>
-            <button 
-              onClick={handlePaymentSubmit} 
-              className="btn btn-primary"
-              disabled={loading}
-            >
-              {loading ? "ĐANG XỬ LÝ..." : "THANH TOÁN"}
-            </button>
+            {/* Buttons */}
+            <div className="payment-actions">
+              <button 
+                onClick={handleGoBack} 
+                className="btn btn-outline"
+                disabled={loading}
+              >
+                QUAY LẠI
+              </button>
+              <button 
+                onClick={handlePaymentSubmit} 
+                className="btn btn-primary"
+                disabled={loading}
+              >
+                {loading ? "ĐANG XỬ LÝ..." : "THANH TOÁN"}
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+
+      {/* Modal xác nhận hủy giao dịch */}
+      <ConfirmModal
+        isOpen={showCancelModal}
+        onClose={() => setShowCancelModal(false)}
+        onConfirm={handleCancelTransaction}
+        title="Hủy giao dịch thanh toán"
+        message="Bạn có chắc chắn muốn hủy giao dịch thanh toán với DRAGONFIRE CINEMA?"
+      />
+    </>
   );
 };
 
