@@ -8,6 +8,7 @@ import Register from "./pages/auth/Register";
 import MovieList from "./pages/movie/MovieList";
 import MovieDetail from "./pages/movie/MovieDetail";
 import MovieAdmin from "./pages/movie/MovieAdmin";
+import FnbAdmin from "./pages/fnb/FnbAdmin";
 import PrivateRoute from "./components/PrivateRoute";
 import ShowtimeAdmin from "./pages/showtime/ShowtimeAdmin";
 import ShowtimeList from "./pages/showtime/ShowtimeList";
@@ -40,6 +41,14 @@ function App() {
             element={
               <PrivateRoute adminOnly={true}>
                 <MovieAdmin />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/fnb"
+            element={
+              <PrivateRoute adminOnly={true}>
+                <FnbAdmin />
               </PrivateRoute>
             }
           />

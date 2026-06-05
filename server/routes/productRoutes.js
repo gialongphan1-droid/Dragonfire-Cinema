@@ -29,24 +29,9 @@ router.delete("/categories/:id", categoryController.deleteCategory);
    PRODUCT ROUTES
 ========================= */
 
-// CREATE PRODUCT
-router.post("/", productController.createProduct);
-
-// READ ALL PRODUCTS
-router.get("/", productController.getAllProducts);
-
-// READ PRODUCT BY ID
-router.get("/:id", productController.getProductById);
-
-// UPDATE PRODUCT
-router.put("/:id", productController.updateProduct);
-
-// DELETE PRODUCT
-router.delete("/:id", productController.deleteProduct);
-
-
 /* =========================
    COMBO ROUTES
+   Put these before "/:id" so "/combos" is not treated as a product id.
 ========================= */
 
 // ADD PRODUCT TO COMBO
@@ -63,5 +48,20 @@ router.put("/combos/:id", comboController.updateComboDetail);
 
 // DELETE COMBO DETAIL
 router.delete("/combos/:id", comboController.deleteComboDetail);
+
+// CREATE PRODUCT
+router.post("/", productController.createProduct);
+
+// READ ALL PRODUCTS
+router.get("/", productController.getAllProducts);
+
+// READ PRODUCT BY ID
+router.get("/:id", productController.getProductById);
+
+// UPDATE PRODUCT
+router.put("/:id", productController.updateProduct);
+
+// DELETE PRODUCT
+router.delete("/:id", productController.deleteProduct);
 
 module.exports = router;

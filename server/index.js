@@ -27,6 +27,8 @@ app.use("/api/auth", require("./routes/authRoutes"));
 // Sau các route khác
 const movieRoutes = require("./routes/movieRoutes");
 app.use("/api/movies", movieRoutes);
+const productRoutes = require("./routes/productRoutes");
+app.use("/api/products", productRoutes);
 // lịch chiếu 
 const showtimeRoutes = require("./routes/showtimeRoutes");
 app.use("/api/showtimes", showtimeRoutes);

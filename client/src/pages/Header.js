@@ -21,8 +21,7 @@ const Header = () => {
         <Link to="/" className="nav-link">Trang chủ</Link>
         <Link to="/movies" className="nav-link">Phim</Link>
         <Link to="/showtimes" className="nav-link">Suất chiếu</Link>
-        <Link to="/products" className="nav-link">Combo</Link>
-        
+
         {/* Chỉ hiển thị với admin */}
         {token && user.role === "admin" && (
           <>
@@ -31,6 +30,9 @@ const Header = () => {
             </Link>
             <Link to="/admin/showtimes" className="nav-link" style={{ color: "#e50914" }}>
               🕐 Quản lý suất chiếu
+            </Link>
+            <Link to="/admin/fnb" className="nav-link" style={{ color: "#e50914" }}>
+              🍿 Quản lý F&B
             </Link>
           </>
         )}
