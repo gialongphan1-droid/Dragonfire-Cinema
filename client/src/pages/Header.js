@@ -1,23 +1,58 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import authService from "../services/authService";
 
 const Header = () => {
 	const navigate = useNavigate();
 	const [user, setUser] = useState(null);
 	const [isAdminMenuOpen, setIsAdminMenuOpen] = useState(false);
 	const adminMenuRef = useRef(null);
+	const [points, setPoints] = useState(0);
 
-	useEffect(() => {
-		const token = localStorage.getItem("token");
+	const fetchUser = async () => {
+		const token = localStorage.getItem("accessToken");
 		const userStr = localStorage.getItem("user");
 		if (token && userStr) {
-			setUser(JSON.parse(userStr));
+			const userData = JSON.parse(userStr);
+			setUser(userData);
+			setPoints(userData.points || 0);
+
+			try {
+				const response = await authService.getPoints();
+				if (response.success) {
+					setPoints(response.data.points);
+				}
+			} catch (error) {
+				console.error("Lấy điểm thất bại:", error);
+			}
+		} else {
+			setUser(null);
+			setPoints(0);
 		}
-	}, []);
+	};
 
 	useEffect(() => {
+		fetchUser();
+
+		// ✅ LẮNG NGHE SỰ KIỆN CẬP NHẬT USER
+		const handleUserUpdate = () => {
+			console.log("🔄 User updated, refreshing header...");
+			fetchUser();
+		};
+		window.addEventListener("userUpdated", handleUserUpdate);
+
+		return () => {
+			window.removeEventListener("userUpdated", handleUserUpdate);
+		};
+	}, []);
+
+	// Đóng menu admin khi click ra ngoài
+	useEffect(() => {
 		const handleClickOutside = (event) => {
-			if (adminMenuRef.current && !adminMenuRef.current.contains(event.target)) {
+			if (
+				adminMenuRef.current &&
+				!adminMenuRef.current.contains(event.target)
+			) {
 				setIsAdminMenuOpen(false);
 			}
 		};
@@ -25,15 +60,22 @@ const Header = () => {
 		return () => document.removeEventListener("mousedown", handleClickOutside);
 	}, []);
 
-	const handleLogout = () => {
-		localStorage.removeItem("token");
-		localStorage.removeItem("user");
-		setUser(null);
-		navigate("/login");
+	const handleLogout = async () => {
+		try {
+			await authService.logout();
+		} catch (error) {
+			console.error("Logout error:", error);
+		} finally {
+			localStorage.removeItem("accessToken");
+			localStorage.removeItem("refreshToken");
+			localStorage.removeItem("user");
+			setUser(null);
+			navigate("/login");
+		}
 	};
 
 	const isAdmin = user?.role === "admin";
-	const token = localStorage.getItem("token");
+	const token = localStorage.getItem("accessToken");
 
 	return (
 		<header className="header">
@@ -54,10 +96,10 @@ const Header = () => {
 					Combo
 				</Link>
 
-				{/* Dropdown Quản lý - Chỉ hiển thị với admin */}
+				{/* Quản lý - Chỉ Admin */}
 				{token && isAdmin && (
 					<div className="dropdown" ref={adminMenuRef}>
-						<button 
+						<button
 							className="dropdown-btn nav-link"
 							onClick={() => setIsAdminMenuOpen(!isAdminMenuOpen)}
 						>
@@ -65,17 +107,28 @@ const Header = () => {
 						</button>
 						{isAdminMenuOpen && (
 							<div className="dropdown-content">
-								<Link to="/admin/movies" onClick={() => setIsAdminMenuOpen(false)}>
+								<Link
+									to="/admin/movies"
+									onClick={() => setIsAdminMenuOpen(false)}
+								>
 									🎬 Quản lý phim
 								</Link>
-								<Link to="/admin/showtimes" onClick={() => setIsAdminMenuOpen(false)}>
+								<Link
+									to="/admin/showtimes"
+									onClick={() => setIsAdminMenuOpen(false)}
+								>
 									🕐 Quản lý suất chiếu
 								</Link>
-								<Link to="/admin/vouchers" onClick={() => setIsAdminMenuOpen(false)}>
+								<Link
+									to="/admin/vouchers"
+									onClick={() => setIsAdminMenuOpen(false)}
+								>
 									🎫 Quản lý Voucher
 								</Link>
-								{/* ✅ ĐÃ XÓA "Quản lý phòng chiếu" */}
-								<Link to="/admin/products" onClick={() => setIsAdminMenuOpen(false)}>
+								<Link
+									to="/admin/products"
+									onClick={() => setIsAdminMenuOpen(false)}
+								>
 									🍿 Quản lý combo
 								</Link>
 							</div>
@@ -83,19 +136,26 @@ const Header = () => {
 					</div>
 				)}
 
-				{/* Lịch sử đặt vé - hiển thị với cả user và admin */}
+				{/* Lịch sử đặt vé */}
 				{token && (
 					<Link to="/my-bookings" className="nav-link">
 						Lịch sử đặt vé
 					</Link>
 				)}
 
+				{/* 📱 Thiết bị */}
+				{token && (
+					<Link to="/devices" className="nav-link">
+						📱 Thiết bị
+					</Link>
+				)}
+
 				{token ? (
 					<div className="user-info">
-						<span className="user-name">Xin chào, {user?.name || "User"}</span>
-						{user?.points !== undefined && (
-							<span className="user-points">⭐ {user.points} điểm</span>
-						)}
+						<Link to="/profile" className="user-name-link">
+							👤 Xin chào, {user?.name || "User"}
+						</Link>
+						<span className="user-points">⭐ {points} điểm</span>
 						<button onClick={handleLogout} className="logout-btn">
 							Đăng xuất
 						</button>

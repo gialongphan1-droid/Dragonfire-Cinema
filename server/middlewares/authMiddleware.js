@@ -25,9 +25,16 @@ const verifyToken = async (req, res, next) => {
 		req.user = user;
 		next();
 	} catch (error) {
+		if (error.name === "TokenExpiredError") {
+			return res.status(401).json({
+				success: false,
+				message: "Token đã hết hạn! Vui lòng đăng nhập lại.",
+				code: "TOKEN_EXPIRED",
+			});
+		}
 		return res.status(401).json({
 			success: false,
-			message: "Token đã hết hạn hoặc không hợp lệ!",
+			message: "Token không hợp lệ!",
 		});
 	}
 };
@@ -58,7 +65,35 @@ const isAdmin = async (req, res, next) => {
 	}
 };
 
+// ✅ MIDDLEWARE KIỂM TRA EMAIL ĐÃ XÁC THỰC CHƯA
+const isVerified = async (req, res, next) => {
+	try {
+		if (!req.user) {
+			return res.status(401).json({
+				success: false,
+				message: "Bạn chưa đăng nhập!",
+			});
+		}
+
+		if (!req.user.isVerified) {
+			return res.status(403).json({
+				success: false,
+				message: "Vui lòng xác thực email trước khi thực hiện hành động này!",
+				code: "EMAIL_NOT_VERIFIED",
+			});
+		}
+
+		next();
+	} catch (error) {
+		return res.status(500).json({
+			success: false,
+			message: "Lỗi kiểm tra xác thực: " + error.message,
+		});
+	}
+};
+
 module.exports = {
 	verifyToken,
 	isAdmin,
+	isVerified,
 };

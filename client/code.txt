@@ -1,0 +1,5 @@
+]633;E;{   echo "==================== CLIENT STRUCTURE ===================="\x3b   echo ""\x3b   cd client && find . -type d -not -path "*/node_modules/*" -not -path "*/.git/*" | sort | sed 's/[^/]*\\//|   /g\x3bs/|/|/g' && cd ..\x3b   echo ""\x3b   echo "==================== SERVER STRUCTURE ===================="\x3b   echo ""\x3b   cd server && find . -type d -not -path "*/node_modules/*" -not -path "*/.git/*" | sort | sed 's/[^/]*\\//|   /g\x3bs/|/|/g' && cd ..\x3b } > code.txt;1d5b7cbf-9216-4b06-bcb9-2e9da92e84c5]633;C==================== CLIENT STRUCTURE ====================
+
+
+==================== SERVER STRUCTURE ====================
+

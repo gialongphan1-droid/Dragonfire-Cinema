@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-// ✅ Đã xóa import Header và Footer
 
 const API_URL = "http://localhost:5000/api";
 
@@ -23,11 +22,18 @@ const Login = () => {
                 password,
             });
 
-            if (response.data.success) {
-                const { token, user } = response.data.data;
+            console.log("📝 Login response:", response.data);
 
-                localStorage.setItem("token", token);
+            if (response.data.success) {
+                // ✅ SỬA: Lấy đúng tên field từ response
+                const { accessToken, refreshToken, user } = response.data.data;
+
+                // ✅ SỬA: Lưu đúng key "accessToken"
+                localStorage.setItem("accessToken", accessToken);
+                localStorage.setItem("refreshToken", refreshToken);
                 localStorage.setItem("user", JSON.stringify(user));
+
+                console.log("✅ Đã lưu accessToken:", localStorage.getItem("accessToken"));
 
                 if (user.role === "admin") {
                     window.location.href = "/admin/movies";
@@ -36,6 +42,7 @@ const Login = () => {
                 }
             }
         } catch (err) {
+            console.error("❌ Login error:", err);
             setError(err.response?.data?.message || "Đăng nhập thất bại!");
         } finally {
             setLoading(false);
@@ -44,7 +51,6 @@ const Login = () => {
 
     return (
         <div className="login-container">
-            {/* ✅ Đã xóa <Header /> */}
             <main className="login-main">
                 <div className="login-card">
                     <h2 className="login-title">ĐĂNG NHẬP</h2>
@@ -85,7 +91,6 @@ const Login = () => {
                     </div>
                 </div>
             </main>
-            {/* ✅ Đã xóa <Footer /> */}
         </div>
     );
 };

@@ -9,7 +9,7 @@ const MyBookings = () => {
 	const [bookings, setBookings] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [cancellingId, setCancellingId] = useState(null);
-	const token = localStorage.getItem("token");
+	const token = localStorage.getItem("accessToken");
 	const user = JSON.parse(localStorage.getItem("user") || "{}");
 	const isAdmin = user.role === "admin";
 

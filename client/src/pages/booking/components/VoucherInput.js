@@ -3,7 +3,15 @@ import axios from "axios";
 
 const API_URL = "http://localhost:5000/api";
 
-const VoucherInput = ({ onVoucherApplied, totalAmount, token }) => {
+const VoucherInput = ({
+	onVoucherApplied,
+	totalAmount,
+	token,
+	ticketTypes,
+	seatTypes,
+	ticketItems,
+	seatItems,
+}) => {
 	const [voucherCode, setVoucherCode] = useState("");
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState("");
@@ -27,7 +35,13 @@ const VoucherInput = ({ onVoucherApplied, totalAmount, token }) => {
 			const requestData = {
 				code: voucherCode,
 				orderValue: totalAmount,
+				ticketTypes: ticketTypes || [],
+				seatTypes: seatTypes || [],
+				ticketItems: ticketItems || [],
+				seatItems: seatItems || [],
 			};
+
+			console.log("📤 Gửi voucher request:", requestData);
 
 			const response = await axios.post(
 				`${API_URL}/vouchers/validate`,
@@ -35,17 +49,22 @@ const VoucherInput = ({ onVoucherApplied, totalAmount, token }) => {
 				{ headers: { Authorization: `Bearer ${token}` } },
 			);
 
+			console.log("📥 Voucher response:", response.data);
+
 			if (response.data.success) {
 				const voucherData = {
 					code: response.data.voucher.code,
+					name: response.data.voucher.name,
 					discountAmount: response.data.discountAmount,
 					finalAmount: response.data.finalAmount,
 				};
 				setAppliedVoucher(voucherData);
 				onVoucherApplied(voucherData);
 				setVoucherCode("");
+				setError("");
 			}
 		} catch (error) {
+			console.error("❌ Lỗi voucher:", error);
 			setError(error.response?.data?.message || "Mã voucher không hợp lệ!");
 			onVoucherApplied(null);
 		} finally {
@@ -109,6 +128,16 @@ const VoucherInput = ({ onVoucherApplied, totalAmount, token }) => {
 						>
 							Giảm {appliedVoucher.discountAmount.toLocaleString()}đ
 						</span>
+						<span
+							style={{
+								display: "block",
+								fontSize: "11px",
+								color: "#2e7d32",
+								marginTop: "2px",
+							}}
+						>
+							Thành tiền: {appliedVoucher.finalAmount.toLocaleString()}đ
+						</span>
 					</div>
 					<button
 						onClick={handleRemoveVoucher}
@@ -159,7 +188,7 @@ const VoucherInput = ({ onVoucherApplied, totalAmount, token }) => {
 					</button>
 				</div>
 			)}
-			
+
 			{error && (
 				<div
 					style={{

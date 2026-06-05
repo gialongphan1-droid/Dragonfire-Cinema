@@ -25,8 +25,8 @@ const ShowTimeDetails = () => {
 	const [ticketPrice, setTicketPrice] = useState(49000);
 
 	const user = JSON.parse(localStorage.getItem("user") || "{}");
-	const isLoggedIn = !!localStorage.getItem("token");
-	const token = localStorage.getItem("token");
+	const isLoggedIn = !!localStorage.getItem("accessToken");
+	const token = localStorage.getItem("accessToken");
 
 	// Giá vé theo loại
 	const ticketPrices = {
@@ -146,9 +146,11 @@ const ShowTimeDetails = () => {
 
 		const confirmBooking = window.confirm(
 			`Bạn có chắc muốn đặt ${selectedSeats.length} vé ${ticketLabels[ticketType]}?\n` +
-			`💰 Giá gốc: ${originalAmount.toLocaleString()}đ\n` +
-			(appliedVoucher ? `🎫 Giảm giá (${appliedVoucher.code}): -${discountAmount.toLocaleString()}đ\n` : "") +
-			`🎯 Tổng tiền: ${finalAmount.toLocaleString()}đ`
+				`💰 Giá gốc: ${originalAmount.toLocaleString()}đ\n` +
+				(appliedVoucher
+					? `🎫 Giảm giá (${appliedVoucher.code}): -${discountAmount.toLocaleString()}đ\n`
+					: "") +
+				`🎯 Tổng tiền: ${finalAmount.toLocaleString()}đ`,
 		);
 
 		if (!confirmBooking) return;
@@ -443,7 +445,7 @@ const ShowTimeDetails = () => {
 							token={token}
 							ticketTypes={[ticketType]}
 							seatTypes={selectedSeats.map((s) =>
-								s.seatType === "VIP" ? "vip" : "normal"
+								s.seatType === "VIP" ? "vip" : "normal",
 							)}
 							ticketItems={[
 								{

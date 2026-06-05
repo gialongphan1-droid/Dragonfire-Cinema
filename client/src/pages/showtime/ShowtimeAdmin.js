@@ -30,7 +30,8 @@ const ShowtimeAdmin = () => {
 	const [selectedSeats, setSelectedSeats] = useState([]);
 	const [actionLoading, setActionLoading] = useState(false);
 
-	const token = localStorage.getItem("token");
+	// ✅ SỬA: Dùng accessToken
+	const token = localStorage.getItem("accessToken");
 	const today = new Date().toISOString().split("T")[0];
 
 	useEffect(() => {
@@ -54,7 +55,11 @@ const ShowtimeAdmin = () => {
 
 	const fetchRooms = async () => {
 		try {
-			const response = await axios.get(`${API_URL}/rooms`);
+			// const token = localStorage.getItem("accessToken");
+			const config = token
+				? { headers: { Authorization: `Bearer ${token}` } }
+				: {};
+			const response = await axios.get(`${API_URL}/rooms`, config);
 			if (response.data.success) {
 				setRooms(response.data.data);
 			}
@@ -104,6 +109,8 @@ const ShowtimeAdmin = () => {
 		}
 	};
 
+	// ... phần còn lại giữ nguyên
+
 	const openSeatManager = async (showtime) => {
 		setCurrentShowtime(showtime);
 		setSelectedSeats([]);
@@ -144,7 +151,7 @@ const ShowtimeAdmin = () => {
 				alert(response.data.message);
 				setSelectedSeats([]);
 				await fetchSeatsStatus(currentShowtime._id);
-				fetchShowtimes(); // Refresh danh sách suất chiếu
+				fetchShowtimes();
 			}
 		} catch (error) {
 			alert(error.response?.data?.message || "Có lỗi xảy ra!");
@@ -229,6 +236,14 @@ const ShowtimeAdmin = () => {
 		e.preventDefault();
 		if (!validateForm()) return;
 
+		// ✅ Lấy token mới mỗi lần gọi
+		const token = localStorage.getItem("accessToken");
+
+		if (!token) {
+			alert("Bạn chưa đăng nhập! Vui lòng đăng nhập lại.");
+			return;
+		}
+
 		try {
 			const config = { headers: { Authorization: `Bearer ${token}` } };
 			const payload = {
@@ -271,12 +286,22 @@ const ShowtimeAdmin = () => {
 				fetchShowtimes();
 			}
 		} catch (error) {
+			console.error("❌ Submit error:", error);
 			alert(error.response?.data?.message || "Có lỗi xảy ra");
 		}
 	};
 
 	const handleDelete = async (id) => {
 		if (!window.confirm("Bạn có chắc muốn xóa suất chiếu này?")) return;
+
+		// ✅ Lấy token mới
+		const token = localStorage.getItem("accessToken");
+
+		if (!token) {
+			alert("Bạn chưa đăng nhập!");
+			return;
+		}
+
 		try {
 			const response = await axios.delete(`${API_URL}/showtimes/${id}`, {
 				headers: { Authorization: `Bearer ${token}` },
@@ -428,7 +453,7 @@ const ShowtimeAdmin = () => {
 							<div className="form-group">
 								<label>Phòng chiếu *</label>
 								<select
-									className={`form-control ${formData.roomId ? "error" : ""}`}
+									className={`form-control ${errors.roomId ? "error" : ""}`}
 									value={formData.roomId}
 									onChange={(e) => {
 										const selectedRoom = rooms.find(
