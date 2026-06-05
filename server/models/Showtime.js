@@ -17,9 +17,9 @@ const ShowtimeSchema = new mongoose.Schema(
 		roomName: { type: String, required: true },
 		startTime: { type: Date, required: true },
 		endTime: { type: Date, required: true },
-		price: { type: Number, required: true },
 		seats: [
 			{
+				
 				seatNumber: String,
 				seatType: {
 					type: String,

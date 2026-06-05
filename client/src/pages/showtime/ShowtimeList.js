@@ -129,11 +129,6 @@ const ShowtimeList = () => {
     setSelectedMovie("");
     setSelectedDate("");
   };
-
-  const formatCurrency = (n) => {
-    return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(n);
-  };
-
   const formatDate = (dateObj) => {
     if (!dateObj) return "Chưa có ngày";
     try {
@@ -293,7 +288,6 @@ const ShowtimeList = () => {
                           <div className="showtime-group-time">{showtime.time}</div>
                           <div className="showtime-group-date">{showtime.date}</div>
                           <div className="showtime-group-room">{showtime.room}</div>
-                          <div className="showtime-group-price">{formatCurrency(showtime.price)}</div>
                           <div className={`showtime-group-seats ${showtime.availableSeats <= 10 ? "seats-low" : ""}`}>
                             🪑 Còn {showtime.availableSeats}/{showtime.totalSeats} ghế
                           </div>

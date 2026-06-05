@@ -14,7 +14,7 @@ import Booking from "./pages/booking/Booking";
 
 // Import các component của Hoàng - Module Showtime
 import LichChieu from "./pages/showtime/LichChieu";
-import ShowTimeList from "./pages/showtime/ShowTimeList";
+import ShowTimeList from "./pages/showtime/ShowtimeList";  // ← ĐÃ SỬA
 import ShowTimeDetails from "./pages/showtime/ShowTimeDetails";
 import ShowTimeForm from "./pages/showtime/ShowTimeForm";
 import RoomList from "./pages/showtime/RoomList";
@@ -52,7 +52,7 @@ function App() {
           <Route path="/showtimes/add" element={<PrivateRoute adminOnly={true}><ShowTimeForm /></PrivateRoute>} />
           <Route path="/showtimes/edit/:id" element={<PrivateRoute adminOnly={true}><ShowTimeForm /></PrivateRoute>} />
           
-          {/* Admin Showtime - Lê Long? */}
+          {/* Admin Showtime */}
           <Route
             path="/admin/showtimes"
             element={

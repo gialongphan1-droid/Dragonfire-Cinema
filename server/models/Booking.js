@@ -1,42 +1,16 @@
 const mongoose = require("mongoose");
 
-const BookingSchema = new mongoose.Schema({
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    required: true
-  },
-  showtimeId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Showtime",
-    required: true
-  },
-  seats: {
-    type: [String],
-    required: true
-  },
-  totalPrice: {
-    type: Number,
-    required: true
-  },
-  status: {
-    type: String,
-    enum: ["pending", "paid", "cancelled"],
-    default: "pending"
-  },
-  paymentMethod: {
-    type: String,
-    enum: ["cash", "card", "momo"],
-    default: "cash"
-  },
-  bookingDate: {
-    type: Date,
-    default: Date.now
-  },
-  expireAt: {
-    type: Date,
-    default: () => new Date(Date.now() + 15 * 60 * 1000) // Hết hạn sau 15 phút
-  }
+const bookingSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  showtimeId: { type: mongoose.Schema.Types.ObjectId, ref: "Showtime", required: true },
+  seats: [{ type: String, required: true }],
+  foods: [{ foodId: { type: mongoose.Schema.Types.ObjectId, ref: "FoodCombo" }, quantity: Number }],
+  totalAmount: { type: Number, required: true },
+  status: { type: String, enum: ["pending", "completed", "failed", "cancelled"], default: "pending" },
+  paymentMethod: { type: String },
+  paymentCode: { type: String },
+  ticketCode: { type: String },
+  createdAt: { type: Date, default: Date.now },
 });
 
-module.exports = mongoose.model("Booking", BookingSchema);
+module.exports = mongoose.model("Booking", bookingSchema);

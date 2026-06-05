@@ -60,9 +60,9 @@ exports.getAvailableSeats = async (req, res) => {
 // Tạo suất chiếu mới
 exports.createShowtime = async (req, res) => {
     try {
-        const { movieId, cinemaName, roomId, startTime, price } = req.body;
+        const { movieId, cinemaName, roomId, startTime } = req.body;
 
-        if (!movieId || !cinemaName || !roomId || !startTime || !price) {
+        if (!movieId || !cinemaName || !roomId || !startTime ) {
             return res.status(400).json({ success: false, message: "Vui lòng nhập đầy đủ thông tin" });
         }
 
@@ -105,7 +105,6 @@ exports.createShowtime = async (req, res) => {
             roomName: room.name,
             startTime,
             endTime,
-            price,
             seats,
         });
 

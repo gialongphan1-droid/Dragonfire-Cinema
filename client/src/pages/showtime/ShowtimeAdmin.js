@@ -6,14 +6,14 @@ const API_URL = "http://localhost:5000/api";
 const ShowtimeAdmin = () => {
   const [showtimes, setShowtimes] = useState([]);
   const [movies, setMovies] = useState([]);
-  const [rooms, setRooms] = useState([]); // ✅ THÊM STATE CHO ROOMS
+  const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingShowtime, setEditingShowtime] = useState(null);
   const [formData, setFormData] = useState({
     movieId: "",
-    roomId: "",        // ✅ ĐỔI room THÀNH roomId
-    roomName: "",      // ✅ THÊM roomName
+    roomId: "",
+    roomName: "",
     date: "",
     time: "",
     price: ""
@@ -24,12 +24,10 @@ const ShowtimeAdmin = () => {
   const token = localStorage.getItem("token");
   const today = new Date().toISOString().split("T")[0];
 
-  // Lấy thời gian thực từ server
   useEffect(() => {
     fetchServerTime();
   }, []);
 
-  // Lấy danh sách phòng
   useEffect(() => {
     fetchRooms();
   }, []);
@@ -55,7 +53,9 @@ const ShowtimeAdmin = () => {
     try {
       const response = await axios.get(`${API_URL}/rooms`);
       if (response.data.success) {
+        // Lấy tất cả phòng để hiển thị
         setRooms(response.data.data);
+        console.log("✅ Rooms loaded:", response.data.data);
       }
     } catch (error) {
       console.error("Lỗi tải phòng:", error);
@@ -86,13 +86,22 @@ const ShowtimeAdmin = () => {
     }
   };
 
-  // Kiểm tra thời gian có hợp lệ không (dùng server time)
   const isValidDateTime = (date, time) => {
     if (!date || !time) return false;
     const dateTimeString = `${date}T${time}:00`;
     const selectedDateTime = new Date(dateTimeString);
     const now = serverTime || new Date();
     return selectedDateTime > now;
+  };
+
+  // Lấy text trạng thái phòng
+  const getRoomStatusText = (status) => {
+    switch(status) {
+      case "active": return "✅ Hoạt động";
+      case "maintenance": return "🔧 Đang bảo trì";
+      case "inactive": return "⛔ Ngừng hoạt động";
+      default: return "";
+    }
   };
 
   const validateForm = () => {
@@ -103,6 +112,12 @@ const ShowtimeAdmin = () => {
     if (!formData.time) newErrors.time = "Vui lòng chọn giờ chiếu!";
     if (!formData.price || formData.price < 50000) {
       newErrors.price = "Giá vé phải từ 50,000đ trở lên!";
+    }
+    
+    // ✅ KIỂM TRA PHÒNG CÓ ĐANG BẢO TRÌ KHÔNG
+    const selectedRoom = rooms.find(r => r._id === formData.roomId);
+    if (selectedRoom && selectedRoom.status !== "active") {
+      newErrors.roomId = `❌ Phòng "${selectedRoom.name}" đang ${selectedRoom.status === "maintenance" ? "bảo trì" : "ngừng hoạt động"}! Không thể thêm suất chiếu.`;
     }
     
     if (formData.date && formData.time && !isValidDateTime(formData.date, formData.time)) {
@@ -120,11 +135,10 @@ const ShowtimeAdmin = () => {
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
       
-      // ✅ TẠO PAYLOAD ĐÚNG VỚI BACKEND
       const payload = {
         movieId: formData.movieId,
-        cinemaName: "Dragonfire Cinema",           // ← THÊM cinemaName
-        roomId: formData.roomId,                   // ← roomId từ database
+        cinemaName: "Dragonfire Cinema",
+        roomId: formData.roomId,
         startTime: new Date(`${formData.date}T${formData.time}:00`).toISOString(),
         price: parseInt(formData.price),
         seats: []
@@ -172,6 +186,12 @@ const ShowtimeAdmin = () => {
   };
 
   const handleEdit = (showtime) => {
+    // ✅ KIỂM TRA PHÒNG HIỆN TẠI CÓ ĐANG BẢO TRÌ KHÔNG
+    const currentRoom = rooms.find(r => r._id === showtime.roomId?._id);
+    if (currentRoom && currentRoom.status !== "active") {
+      alert(`⚠️ Lưu ý: Phòng "${currentRoom.name}" hiện đang ${currentRoom.status === "maintenance" ? "bảo trì" : "ngừng hoạt động"}. Bạn nên chuyển sang phòng khác!`);
+    }
+    
     setEditingShowtime(showtime);
     setFormData({
       movieId: showtime.movieId?._id || "",
@@ -182,10 +202,6 @@ const ShowtimeAdmin = () => {
       price: showtime.price || ""
     });
     setShowModal(true);
-  };
-
-  const formatCurrency = (n) => {
-    return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(n);
   };
 
   if (loading) return <div className="loading text-center mt-5">Đang tải...</div>;
@@ -208,7 +224,6 @@ const ShowtimeAdmin = () => {
               <th>Phòng chiếu</th>
               <th>Ngày chiếu</th>
               <th>Giờ chiếu</th>
-              <th>Giá vé</th>
               <th>Ghế trống</th>
               <th>Hành động</th>
             </tr>
@@ -221,7 +236,6 @@ const ShowtimeAdmin = () => {
                 <td>{st.roomName}</td>
                 <td>{st.startTime ? new Date(st.startTime).toLocaleDateString("vi-VN") : "Chưa có ngày"}</td>
                 <td>{st.startTime ? new Date(st.startTime).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" }) : "Chưa có giờ"}</td>
-                <td>{formatCurrency(st.price)}</td>
                 <td>{(st.availableSeats || 100) - (st.bookedSeats?.length || 0)}/{st.availableSeats || 100}</td>
                 <td>
                   <button
@@ -277,12 +291,14 @@ const ShowtimeAdmin = () => {
                       roomId: selectedRoom?._id || "",
                       roomName: selectedRoom?.name || ""
                     });
+                    // Xóa lỗi khi chọn lại
+                    if (errors.roomId) setErrors({ ...errors, roomId: "" });
                   }}
                 >
                   <option value="">-- Chọn phòng --</option>
                   {rooms.map(room => (
                     <option key={room._id} value={room._id}>
-                      {room.name} ({room.type}) - {room.status === "active" ? "✅ Hoạt động" : "🔧 Bảo trì"}
+                      {room.name} ({room.type}) - {getRoomStatusText(room.status)}
                     </option>
                   ))}
                 </select>
