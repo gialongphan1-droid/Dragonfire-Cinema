@@ -19,6 +19,7 @@ import RoomList from "./pages/showtime/RoomList";
 import RoomForm from "./pages/showtime/RoomForm";
 import ShowTimeDetails from "./pages/showtime/ShowTimeDetails";
 import ShowTimeForm from "./pages/showtime/ShowTimeForm";
+import Payment from "./pages/payment/Payment";
 import "./App.css";
 
 function App() {
@@ -87,6 +88,12 @@ function App() {
               </PrivateRoute>
             }
           />
+          
+<Route path="/payment" element={
+  <PrivateRoute>
+    <Payment />
+  </PrivateRoute>
+} />
 
 <Route path="/my-bookings" element={
   <PrivateRoute>

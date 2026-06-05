@@ -1,10 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
-const TicketTypeSelector = ({ onChange }) => {
+const TicketTypeSelector = ({ onChange, resetKey }) => {
   const [tickets, setTickets] = useState({ adult: 0, student: 0, senior: 0 });
   const prices = { adult: 69000, student: 49000, senior: 50000 };
   const labels = { adult: "Người lớn", student: "HSSV - U22", senior: "Người cao tuổi" };
   const icons = { adult: "👨", student: "🎓", senior: "👴" };
+
+   useEffect(() => {
+    setTickets({ adult: 0, student: 0, senior: 0 });
+    onChange({ tickets: { adult: 0, student: 0, senior: 0 }, totalTicketPrice: 0, totalSeats: 0 });
+  }, [resetKey]);
 
   const updateQuantity = (type, delta) => {
     const newQty = Math.max(0, tickets[type] + delta);
