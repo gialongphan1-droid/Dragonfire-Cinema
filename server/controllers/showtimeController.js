@@ -1,46 +1,41 @@
 const Showtime = require("../models/Showtime");
 const Movie = require("../models/Movie");
 const Room = require("../models/Room");
-const Booking = require("../models/Booking");
+const Booking = require("../models/Booking"); 
 
-// Lấy tất cả suất chiếu
-const getAllShowtimes = async (req, res) => {
+// Thêm helper này (đặt sau const Booking = require("../models/Booking"))
+const getAvailableSeatsCount = async (showtimeId) => {
+  const showtime = await Showtime.findById(showtimeId).select("seats");
+  if (!showtime) return 0;
+  const totalSeats = showtime.seats.length; // 96
+  const bookedSeats = showtime.seats.filter(seat => seat.isBooked === true).length;
+  return totalSeats - bookedSeats;
+};
+
+
+// Lấy tất cả suất chiếu (có kèm số ghế trống)
+exports.getAllShowtimes = async (req, res) => {
     try {
-        const showtimes = await Showtime.find()
-            .populate("movieId")
-            .populate("roomId")
-            .sort({ startTime: -1 });
-
-        for (let showtime of showtimes) {
-            const bookings = await Booking.find({
-                showtimeId: showtime._id,
-                status: { $in: ["pending", "completed"] },
-            });
-            const bookedSeatsFromBooking = bookings.flatMap((b) => b.seats);
-
-            const allBookedSeats = [
-                ...new Set([
-                    ...(showtime.bookedSeats || []),
-                    ...bookedSeatsFromBooking,
-                ]),
-            ];
-
-            const totalSeats = showtime.seats?.length || showtime.availableSeats || 100;
-            const availableSeats = totalSeats - allBookedSeats.length;
-
-            showtime._doc.bookedSeats = allBookedSeats;
-            showtime._doc.availableSeatsCount = availableSeats;
-            showtime._doc.totalSeats = totalSeats;
-        }
-
-        res.status(200).json({ success: true, data: showtimes });
+        const showtimes = await Showtime.find().populate("movieId").populate("roomId");
+        
+        // Thêm availableSeats vào mỗi suất chiếu
+        const showtimesWithSeats = await Promise.all(showtimes.map(async (st) => {
+            const availableSeats = await getAvailableSeatsCount(st._id);
+            return {
+                ...st._doc,
+                availableSeats: availableSeats,
+                totalSeats: st.seats?.length || 0
+            };
+        }));
+        
+        res.status(200).json({ success: true, data: showtimesWithSeats });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
 };
 
 // Lấy suất chiếu theo phim
-const getShowtimesByMovie = async (req, res) => {
+exports.getShowtimesByMovie = async (req, res) => {
     try {
         const { movieId } = req.params;
         const data = await Showtime.find({ movieId }).sort({ startTime: 1 });
@@ -51,11 +46,9 @@ const getShowtimesByMovie = async (req, res) => {
 };
 
 // Lấy chi tiết suất chiếu theo ID
-const getShowtimeById = async (req, res) => {
+exports.getShowtimeById = async (req, res) => {
     try {
-        const data = await Showtime.findById(req.params.id)
-            .populate("movieId")
-            .populate("roomId");
+        const data = await Showtime.findById(req.params.id).populate("movieId").populate("roomId");
         if (!data) {
             return res.status(404).json({ success: false, message: "Không tìm thấy suất chiếu" });
         }
@@ -66,34 +59,20 @@ const getShowtimeById = async (req, res) => {
 };
 
 // Lấy danh sách ghế trống
-const getAvailableSeats = async (req, res) => {
+exports.getAvailableSeats = async (req, res) => {
     try {
         const showtime = await Showtime.findById(req.params.id);
         if (!showtime) {
             return res.status(404).json({ success: false, message: "Không tìm thấy suất chiếu" });
         }
-
-        const bookings = await Booking.find({
-            showtimeId: req.params.id,
-            status: { $in: ["pending", "completed"] },
-        });
-        const bookedSeatsFromBooking = bookings.flatMap((b) => b.seats);
-
-        const seats = showtime.seats.map((seat) => ({
-            ...seat.toObject(),
-            isBooked: seat.isBooked || bookedSeatsFromBooking.includes(seat.seatNumber),
-        }));
-
-        const availableSeats = seats.filter((seat) => !seat.isBooked);
-
+        const availableSeats = showtime.seats.filter(seat => !seat.isBooked);
         res.status(200).json({
             success: true,
             data: {
-                total: seats.length,
+                total: showtime.seats.length,
                 available: availableSeats.length,
-                seats: availableSeats,
-                allSeats: seats,
-            },
+                seats: availableSeats
+            }
         });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -101,21 +80,19 @@ const getAvailableSeats = async (req, res) => {
 };
 
 // Tạo suất chiếu mới
-const createShowtime = async (req, res) => {
+exports.createShowtime = async (req, res) => {
     try {
-        const { movieId, cinemaName, roomId, startTime, price, rows, columns } = req.body;
+        const { movieId, cinemaName, roomId, startTime } = req.body;
 
-        if (!movieId || !cinemaName || !roomId || !startTime) {
+        if (!movieId || !cinemaName || !roomId || !startTime ) {
             return res.status(400).json({ success: false, message: "Vui lòng nhập đầy đủ thông tin" });
         }
 
+        // Kiểm tra thời gian trong tương lai
         const serverNow = new Date();
         const selectedTime = new Date(startTime);
         if (selectedTime <= serverNow) {
-            return res.status(400).json({
-                success: false,
-                message: "Thời gian chiếu không hợp lệ! Phải chọn thời gian trong tương lai.",
-            });
+            return res.status(400).json({ success: false, message: "Thời gian chiếu không hợp lệ! Phải chọn thời gian trong tương lai." });
         }
 
         const movie = await Movie.findById(movieId);
@@ -126,21 +103,21 @@ const createShowtime = async (req, res) => {
 
         const endTime = new Date(new Date(startTime).getTime() + movie.duration * 60000);
 
-        const finalRows = rows || room.rows || 5;
-        const finalCols = columns || room.columns || 10;
-        const rowLetters = ["A", "B", "C", "D", "E", "F", "G", "H"];
-
+        // Tạo seats dựa trên số hàng và cột của phòng
         const seats = [];
-        for (let i = 0; i < finalRows; i++) {
-            for (let j = 1; j <= finalCols; j++) {
-                seats.push({
-                    seatNumber: `${rowLetters[i]}${j}`,
-                    seatType: room.type === "VIP" ? "VIP" : "Standard",
-                    isBooked: false,
-                    isLocked: false,
-                });
-            }
-        }
+        const rows = ["A", "B", "C", "D", "E", "F", "G", "H"];
+        const vipRows = ["F", "G", "H"];
+
+        for (let i = 0; i < rows.length; i++) {
+         for (let j = 1; j <= 12; j++) {
+             seats.push({
+             seatNumber: `${rows[i]}${j}`,
+             seatType: vipRows.includes(rows[i]) ? "VIP" : "Standard",
+            isBooked: false,
+    });
+  }
+}
+
 
         const showtime = await Showtime.create({
             movieId,
@@ -150,18 +127,10 @@ const createShowtime = async (req, res) => {
             roomName: room.name,
             startTime,
             endTime,
-            price: price || 90000,
-            seats: seats,
-            availableSeats: seats.length,
-            rows: finalRows,
-            columns: finalCols,
+            seats,
         });
 
-        res.status(201).json({
-            success: true,
-            message: "Thêm suất chiếu thành công!",
-            data: showtime,
-        });
+        res.status(201).json({ success: true, data: showtime });
     } catch (error) {
         console.error("Server error:", error);
         res.status(500).json({ success: false, message: error.message });
@@ -169,38 +138,37 @@ const createShowtime = async (req, res) => {
 };
 
 // Cập nhật suất chiếu
-const updateShowtime = async (req, res) => {
+exports.updateShowtime = async (req, res) => {
     try {
         const { startTime } = req.body;
-
+        
+        // Kiểm tra thời gian trong tương lai
         if (startTime) {
             const serverNow = new Date();
             const selectedTime = new Date(startTime);
             if (selectedTime <= serverNow) {
-                return res.status(400).json({
-                    success: false,
-                    message: "Thời gian chiếu không hợp lệ! Phải chọn thời gian trong tương lai.",
-                });
+                return res.status(400).json({ success: false, message: "Thời gian chiếu không hợp lệ! Phải chọn thời gian trong tương lai." });
             }
         }
-
-        const data = await Showtime.findByIdAndUpdate(req.params.id, req.body, {
-            new: true,
-            runValidators: true,
-        });
-
+        
+        const data = await Showtime.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            { new: true, runValidators: true }
+        );
+        
         if (!data) {
             return res.status(404).json({ success: false, message: "Không tìm thấy suất chiếu" });
         }
-
-        res.status(200).json({ success: true, message: "Cập nhật thành công!", data });
+        
+        res.status(200).json({ success: true, data });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
 };
 
 // Xóa suất chiếu
-const deleteShowtime = async (req, res) => {
+exports.deleteShowtime = async (req, res) => {
     try {
         const showtime = await Showtime.findByIdAndDelete(req.params.id);
         if (!showtime) {
@@ -210,143 +178,4 @@ const deleteShowtime = async (req, res) => {
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
-};
-
-// ============================================
-// QUẢN LÝ KHÓA/MỞ KHÓA GHẾ (ADMIN)
-// ============================================
-
-// Khóa ghế
-const lockSeats = async (req, res) => {
-    try {
-        const { showtimeId, seats } = req.body;
-
-        const showtime = await Showtime.findById(showtimeId);
-        if (!showtime) {
-            return res.status(404).json({ success: false, message: "Không tìm thấy suất chiếu" });
-        }
-
-        const alreadyLocked = seats.filter((s) => showtime.lockedSeats?.includes(s));
-        if (alreadyLocked.length > 0) {
-            return res.status(400).json({
-                success: false,
-                message: `Ghế ${alreadyLocked.join(", ")} đã bị khóa!`,
-            });
-        }
-
-        const bookings = await Booking.find({
-            showtimeId,
-            status: { $in: ["pending", "completed"] },
-            seats: { $in: seats },
-        });
-
-        if (bookings.length > 0) {
-            const bookedSeats = bookings.flatMap((b) => b.seats);
-            const conflictSeats = seats.filter((s) => bookedSeats.includes(s));
-            return res.status(400).json({
-                success: false,
-                message: `Ghế ${conflictSeats.join(", ")} đã được đặt, không thể khóa!`,
-            });
-        }
-
-        showtime.lockedSeats = [...new Set([...(showtime.lockedSeats || []), ...seats])];
-
-        if (showtime.seats && showtime.seats.length > 0) {
-            showtime.seats = showtime.seats.map((seat) => ({
-                ...seat.toObject(),
-                isLocked: showtime.lockedSeats.includes(seat.seatNumber),
-            }));
-        }
-
-        await showtime.save();
-
-        res.json({
-            success: true,
-            message: `Đã khóa ${seats.length} ghế thành công!`,
-            lockedSeats: showtime.lockedSeats,
-        });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
-};
-
-// Mở khóa ghế
-const unlockSeats = async (req, res) => {
-    try {
-        const { showtimeId, seats } = req.body;
-
-        const showtime = await Showtime.findById(showtimeId);
-        if (!showtime) {
-            return res.status(404).json({ success: false, message: "Không tìm thấy suất chiếu" });
-        }
-
-        showtime.lockedSeats = (showtime.lockedSeats || []).filter((s) => !seats.includes(s));
-
-        if (showtime.seats && showtime.seats.length > 0) {
-            showtime.seats = showtime.seats.map((seat) => ({
-                ...seat.toObject(),
-                isLocked: showtime.lockedSeats.includes(seat.seatNumber),
-            }));
-        }
-
-        await showtime.save();
-
-        res.json({
-            success: true,
-            message: `Đã mở khóa ${seats.length} ghế thành công!`,
-            lockedSeats: showtime.lockedSeats,
-        });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
-};
-
-// Lấy danh sách ghế kèm trạng thái
-const getSeatsStatus = async (req, res) => {
-    try {
-        const showtime = await Showtime.findById(req.params.id);
-        if (!showtime) {
-            return res.status(404).json({ success: false, message: "Không tìm thấy suất chiếu" });
-        }
-
-        const bookings = await Booking.find({
-            showtimeId: req.params.id,
-            status: { $in: ["pending", "completed"] },
-        });
-        const bookedSeats = bookings.flatMap((b) => b.seats);
-
-        const seatsStatus = (showtime.seats || []).map((seat) => ({
-            seatNumber: seat.seatNumber,
-            seatType: seat.seatType,
-            isBooked: bookedSeats.includes(seat.seatNumber),
-            isLocked: (showtime.lockedSeats || []).includes(seat.seatNumber),
-            isAvailable: !bookedSeats.includes(seat.seatNumber) && !(showtime.lockedSeats || []).includes(seat.seatNumber),
-        }));
-
-        res.json({
-            success: true,
-            data: {
-                totalSeats: seatsStatus.length,
-                availableSeats: seatsStatus.filter((s) => s.isAvailable).length,
-                bookedSeats: seatsStatus.filter((s) => s.isBooked).length,
-                lockedSeats: seatsStatus.filter((s) => s.isLocked).length,
-                seats: seatsStatus,
-            },
-        });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
-};
-
-module.exports = {
-    getAllShowtimes,
-    getShowtimesByMovie,
-    getShowtimeById,
-    getAvailableSeats,
-    createShowtime,
-    updateShowtime,
-    deleteShowtime,
-    lockSeats,
-    unlockSeats,
-    getSeatsStatus,
 };

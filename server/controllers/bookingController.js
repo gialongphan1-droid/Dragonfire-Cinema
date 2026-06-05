@@ -15,7 +15,6 @@ const isFirstBooking = async (userId) => {
 const checkWeekendCombo = (date, seatCount) => {
 	const dayOfWeek = new Date(date).getDay();
 	const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-
 	if (isWeekend && seatCount >= 2) {
 		const freeSeats = Math.floor(seatCount / 2);
 		return { isWeekendCombo: true, freeSeats };
@@ -23,14 +22,14 @@ const checkWeekendCombo = (date, seatCount) => {
 	return { isWeekendCombo: false, freeSeats: 0 };
 };
 
-// Cập nhật điểm thưởng (1 điểm = 1.000đ)
+// Cập nhật điểm thưởng
 const updateUserPoints = async (userId, totalPrice) => {
 	const pointsEarned = Math.floor(totalPrice / 1000);
 	await User.findByIdAndUpdate(userId, { $inc: { points: pointsEarned } });
 	return pointsEarned;
 };
 
-// Lấy danh sách ghế đã đặt và đã khóa cho suất chiếu
+// Lấy danh sách ghế trống
 const getAvailableSeats = async (req, res) => {
 	try {
 		const { showtimeId } = req.params;
@@ -44,29 +43,22 @@ const getAvailableSeats = async (req, res) => {
 				.json({ success: false, message: "Không tìm thấy suất chiếu!" });
 		}
 
-		// Lấy ghế đã đặt từ Booking
-		const bookings = await Booking.find({
-			showtimeId,
-			status: { $in: ["pending", "completed"] },
-		}).select("seats");
-		const occupiedSeats = bookings.flatMap((b) => b.seats);
-
-		// Lấy ghế đã khóa từ Showtime
-		const lockedSeats = showtime.lockedSeats || [];
-
-		// Gộp ghế đã đặt và ghế đã khóa
-		const allUnavailableSeats = [...new Set([...occupiedSeats, ...lockedSeats])];
-		const remainingSeats =
-			(showtime.availableSeats || 100) - occupiedSeats.length - lockedSeats.length;
+		// Lấy từ showtime.seats
+		const occupiedSeats = showtime.seats
+			.filter((seat) => seat.isBooked === true)
+			.map((seat) => seat.seatNumber);
+		const availableSeats = showtime.seats
+			.filter((seat) => seat.isBooked === false)
+			.map((seat) => seat.seatNumber);
 
 		res.json({
 			success: true,
 			data: {
 				showtime,
-				occupiedSeats: allUnavailableSeats,
-				lockedSeats: lockedSeats,
-				remainingSeats: remainingSeats,
-				totalSeats: showtime.availableSeats || 100,
+				occupiedSeats,
+				availableSeats,
+				totalSeats: showtime.seats.length,
+				remainingSeats: availableSeats.length,
 			},
 		});
 	} catch (error) {
@@ -77,8 +69,10 @@ const getAvailableSeats = async (req, res) => {
 // Tạo booking mới
 const createBooking = async (req, res) => {
 	try {
-		const { showtimeId, seats, totalAmount } = req.body;
+		let { showtimeId, seats, totalAmount, voucherCode, discountAmount } =
+			req.body;
 		const userId = req.user.id;
+		const isAdmin = req.user.role === "admin";
 
 		if (!showtimeId || !seats || seats.length === 0) {
 			return res
@@ -94,116 +88,143 @@ const createBooking = async (req, res) => {
 		}
 
 		// Kiểm tra ghế đã được đặt chưa
-		const existingBooking = await Booking.findOne({
-			showtimeId,
-			status: { $in: ["pending", "completed"] },
-			seats: { $in: seats },
+		const alreadyBooked = seats.filter((seatName) => {
+			const seat = showtime.seats.find((s) => s.seatNumber === seatName);
+			return seat && seat.isBooked === true;
 		});
 
-		if (existingBooking) {
-			const conflictedSeats = seats.filter((seat) =>
-				existingBooking.seats.includes(seat),
-			);
+		if (alreadyBooked.length > 0 && !isAdmin) {
 			return res.status(400).json({
 				success: false,
-				message: `Ghế ${conflictedSeats.join(", ")} đã được đặt!`,
+				message: `Ghế ${alreadyBooked.join(", ")} đã được đặt!`,
 			});
 		}
 
-		// Cập nhật số ghế còn lại
-		if (showtime.availableSeats !== undefined) {
-			showtime.availableSeats = showtime.availableSeats - seats.length;
-			await showtime.save();
+		// Kiểm tra pending booking
+		if (!isAdmin) {
+			const existingPending = await Booking.findOne({
+				userId,
+				showtimeId,
+				status: "pending",
+				expiresAt: { $gt: new Date() },
+			});
+			if (existingPending) {
+				return res.status(400).json({
+					success: false,
+					message:
+						"Bạn đã có một đơn đặt vé đang chờ thanh toán cho suất chiếu này!",
+				});
+			}
 		}
 
-		// Cập nhật bookedSeats
-		await Showtime.findByIdAndUpdate(showtimeId, {
-			$addToSet: { bookedSeats: { $each: seats } },
-		});
-
-		let finalAmount = totalAmount;
-		let discountAmount = 0;
-		let discountType = null;
+		// Tính toán khuyến mãi
+		let finalAmount = totalAmount || seats.length * (showtime.price || 90000);
+		let appliedDiscountAmount = discountAmount || 0;
+		let discountType = voucherCode ? "voucher" : null;
 		let promotionMessage = "";
 
 		const isFirst = await isFirstBooking(userId);
-		if (isFirst) {
-			discountAmount = finalAmount * 0.2;
+		if (isFirst && !voucherCode) {
+			appliedDiscountAmount = finalAmount * 0.2;
 			discountType = "first_booking";
-			finalAmount = finalAmount - discountAmount;
+			finalAmount = finalAmount - appliedDiscountAmount;
 			promotionMessage =
-				"Chao mung thanh vien moi! Ban duoc giam 20% cho ve dau tien.";
+				"Chào mừng thành viên mới! Bạn được giảm 20% cho vé đầu tiên.";
 		}
 
 		const { isWeekendCombo, freeSeats } = checkWeekendCombo(
 			showtime.startTime,
 			seats.length,
 		);
-		if (isWeekendCombo && !isFirst) {
+		if (isWeekendCombo && !isFirst && !voucherCode) {
 			const discountedPrice =
 				(seats.length - freeSeats) * (showtime.price || 90000);
-			discountAmount = finalAmount - discountedPrice;
+			appliedDiscountAmount = finalAmount - discountedPrice;
 			finalAmount = discountedPrice;
 			discountType = "weekend_combo";
-			promotionMessage = `Combo cuoi tuan! Mua ${seats.length} tang ${freeSeats} ve.`;
+			promotionMessage = `Combo cuối tuần! Mua ${seats.length} tặng ${freeSeats} vé.`;
 		}
 
 		if (finalAmount < 0) finalAmount = 0;
 
 		const ticketCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+		const expiresAt = isAdmin ? null : new Date(Date.now() + 5 * 60 * 1000);
+
+		// Cập nhật isBooked trong showtime
+		for (const seatName of seats) {
+			const seat = showtime.seats.find((s) => s.seatNumber === seatName);
+			if (seat) seat.isBooked = true;
+		}
+		await showtime.save();
 
 		const booking = new Booking({
+			bookingCode: ticketCode,
 			userId,
 			showtimeId,
 			seats,
-			foods: [],
+			customerName: req.user.name || "Khách",
+			customerPhone: req.body.customerPhone || "",
+			customerEmail: req.user.email || "",
+			totalPrice: finalAmount,
 			totalAmount: finalAmount,
 			originalAmount: totalAmount,
-			discountAmount,
+			discountAmount: appliedDiscountAmount,
 			discountType,
+			voucherCode: voucherCode || null,
 			status: "pending",
 			ticketCode,
+			expiresAt,
 		});
 
 		await booking.save();
+
 		const pointsEarned = await updateUserPoints(userId, finalAmount);
 
 		res.status(201).json({
 			success: true,
-			message: promotionMessage || "Đặt vé thành công!",
+			message:
+				promotionMessage ||
+				(isAdmin
+					? "Admin đặt vé thành công!"
+					: "Đặt vé thành công! Vui lòng thanh toán trong 5 phút."),
 			data: {
 				bookingId: booking._id,
 				ticketCode,
 				originalAmount: totalAmount,
 				finalAmount,
-				discountAmount,
+				discountAmount: appliedDiscountAmount,
 				pointsEarned,
-				remainingSeats: showtime.availableSeats,
+				expiresAt,
 			},
 		});
 	} catch (error) {
+		console.error("Create booking error:", error);
 		res.status(500).json({ success: false, message: error.message });
 	}
 };
 
-// Lấy danh sách booking (Admin xem tất cả, User chỉ xem của mình)
+// Lấy danh sách booking
 const getMyBookings = async (req, res) => {
 	try {
-		const user = await User.findById(req.user.id);
-		const isAdmin = user?.role === "admin";
+		const isAdmin = req.user.role === "admin";
+		let bookings;
 
-		let query = {};
-		if (!isAdmin) {
-			query = { userId: req.user.id };
+		if (isAdmin) {
+			bookings = await Booking.find()
+				.populate({
+					path: "showtimeId",
+					populate: { path: "movieId", select: "title poster" },
+				})
+				.populate("userId", "name email")
+				.sort({ createdAt: -1 });
+		} else {
+			bookings = await Booking.find({ userId: req.user.id })
+				.populate({
+					path: "showtimeId",
+					populate: { path: "movieId", select: "title poster" },
+				})
+				.sort({ createdAt: -1 });
 		}
-
-		const bookings = await Booking.find(query)
-			.populate({
-				path: "showtimeId",
-				populate: { path: "movieId", select: "title poster" },
-			})
-			.populate("userId", "name email")
-			.sort({ createdAt: -1 });
 
 		res.json({ success: true, data: bookings });
 	} catch (error) {
@@ -211,28 +232,23 @@ const getMyBookings = async (req, res) => {
 	}
 };
 
-// Hủy booking (Admin có thể hủy bất kỳ, User chỉ hủy của mình)
+// Hủy booking
 const cancelBooking = async (req, res) => {
-	console.log("CANCEL BOOKING CALLED - ID:", req.params.bookingId);
 	try {
-		const user = await User.findById(req.user.id);
-		const isAdmin = user?.role === "admin";
-
-		let booking;
-
-		if (isAdmin) {
-			booking = await Booking.findById(req.params.bookingId);
-		} else {
-			booking = await Booking.findOne({
-				_id: req.params.bookingId,
-				userId: req.user.id,
-			});
-		}
-
+		const booking = await Booking.findById(req.params.bookingId);
 		if (!booking) {
 			return res
 				.status(404)
 				.json({ success: false, message: "Không tìm thấy booking!" });
+		}
+
+		const isAdmin = req.user.role === "admin";
+		const isOwner = booking.userId.toString() === req.user.id;
+
+		if (!isAdmin && !isOwner) {
+			return res
+				.status(403)
+				.json({ success: false, message: "Bạn không có quyền hủy vé này!" });
 		}
 
 		if (booking.status !== "pending") {
@@ -241,23 +257,22 @@ const cancelBooking = async (req, res) => {
 				.json({ success: false, message: "Không thể hủy booking này!" });
 		}
 
+		// Giải phóng ghế
+		const showtime = await Showtime.findById(booking.showtimeId);
+		if (showtime) {
+			for (const seatName of booking.seats) {
+				const seat = showtime.seats.find((s) => s.seatNumber === seatName);
+				if (seat) seat.isBooked = false;
+			}
+			await showtime.save();
+		}
+
 		booking.status = "cancelled";
 		await booking.save();
 
-		if (isAdmin) {
-			const showtime = await Showtime.findById(booking.showtimeId);
-			if (showtime) {
-				showtime.availableSeats =
-					(showtime.availableSeats || 0) + booking.seats.length;
-				showtime.bookedSeats = showtime.bookedSeats?.filter(
-					(seat) => !booking.seats.includes(seat),
-				);
-				await showtime.save();
-			}
-		}
-
 		res.json({ success: true, message: "Hủy đặt vé thành công!" });
 	} catch (error) {
+		console.error("Cancel booking error:", error);
 		res.status(500).json({ success: false, message: error.message });
 	}
 };
