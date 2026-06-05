@@ -13,14 +13,15 @@ import ShowtimeAdmin from "./pages/showtime/ShowtimeAdmin";
 import ShowtimeList from "./pages/showtime/ShowtimeList";
 import Booking from "./pages/booking/Booking";
 import MyBookings from "./pages/booking/MyBookings";
-import PaymentPage from "./pages/Payment/PaymentPage";
-import PaymentResult from "./pages/Payment/PaymentResult";
 
 import LichChieu from "./pages/showtime/LichChieu";
 import RoomList from "./pages/showtime/RoomList";
 import RoomForm from "./pages/showtime/RoomForm";
 import ShowTimeDetails from "./pages/showtime/ShowTimeDetails";
 import ShowTimeForm from "./pages/showtime/ShowTimeForm";
+import Payment from "./pages/Payment/Payment";
+import PaymentPage from "./pages/Payment/PaymentPage";
+import PaymentResult from "./pages/Payment/PaymentResult";
 import "./App.css";
 
 function App() {
@@ -36,9 +37,8 @@ function App() {
           <Route path="/movies/:id" element={<MovieDetail />} />
 		  <Route path="/showtimes" element={<ShowtimeList />} />
 		  <Route path="/booking" element={<Booking />} />
-		  <Route path="/payment" element={<PaymentPage />} />
-      <Route path="/payment/result" element={<PaymentResult />} />
-
+ <Route path="/payment" element={<PaymentPage />} /> 
+ <Route path="/payment/result" element={<PaymentResult />} />
           <Route
             path="/admin/movies"
             element={
@@ -91,6 +91,12 @@ function App() {
               </PrivateRoute>
             }
           />
+          
+<Route path="/payment" element={
+  <PrivateRoute>
+    <Payment />
+  </PrivateRoute>
+} />
 
 <Route path="/my-bookings" element={
   <PrivateRoute>

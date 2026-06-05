@@ -1,0 +1,586 @@
+]633;E;{   echo "=== client/src/pages/showtime/RoomForm.js ==="\x3b   cat ./client/src/pages/showtime/RoomForm.js\x3b   echo ""\x3b   echo "=== client/src/pages/showtime/RoomList.js ==="\x3b   cat ./client/src/pages/showtime/RoomList.js\x3b   echo ""\x3b   echo "=== server/controllers/roomController.js ==="\x3b   cat ./server/controllers/roomController.js\x3b   echo ""\x3b   echo "=== server/models/Room.js ==="\x3b   cat ./server/models/Room.js\x3b   echo ""\x3b   echo "=== server/routes/roomRoutes.js ==="\x3b   cat ./server/routes/roomRoutes.js\x3b } > code.txt;90610c14-64ea-4068-b2fa-2e5184ad2bba]633;C=== client/src/pages/showtime/RoomForm.js ===
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { useNavigate, useParams } from "react-router-dom";
+
+const API_URL = "http://localhost:5000/api/rooms";
+
+const RoomForm = () => {
+    const { id } = useParams();
+    const navigate = useNavigate();
+    const isEditMode = !!id;
+
+    const [formData, setFormData] = useState({
+        name: "",
+        capacity: "",
+        type: "Standard",
+        rows: 5,
+        columns: 10,
+        status: "active",
+        description: "",
+        amenities: []
+    });
+
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
+    const [success, setSuccess] = useState("");
+
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const isAdmin = user?.isAdmin === true;
+
+    const amenitiesList = ["Air Conditioning", "Dolby Sound", "Reclining Seats", "Food Service", "Wheelchair Access"];
+
+    useEffect(() => {
+        if (isEditMode) {
+            fetchRoom();
+        }
+    }, [id]);
+
+    const fetchRoom = async () => {
+        try {
+            setLoading(true);
+            const response = await axios.get(`${API_URL}/${id}`);
+            const data = response.data.data;
+            setFormData({
+                name: data.name || "",
+                capacity: data.capacity || "",
+                type: data.type || "Standard",
+                rows: data.rows || 5,
+                columns: data.columns || 10,
+                status: data.status || "active",
+                description: data.description || "",
+                amenities: data.amenities || []
+            });
+        } catch (err) {
+            setError("Không thể tải thông tin phòng");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+        
+        // Tự động tính capacity khi thay đổi rows/columns
+        if (name === "rows" || name === "columns") {
+            const rows = name === "rows" ? parseInt(value) : formData.rows;
+            const cols = name === "columns" ? parseInt(value) : formData.columns;
+            setFormData(prev => ({ ...prev, capacity: rows * cols }));
+        }
+    };
+
+    const handleAmenityChange = (amenity) => {
+        setFormData(prev => {
+            if (prev.amenities.includes(amenity)) {
+                return { ...prev, amenities: prev.amenities.filter(a => a !== amenity) };
+            } else {
+                return { ...prev, amenities: [...prev.amenities, amenity] };
+            }
+        });
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setError("");
+        setSuccess("");
+
+        if (!formData.name || !formData.capacity) {
+            setError("Vui lòng điền đầy đủ thông tin");
+            setLoading(false);
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem("token");
+            const config = {
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+            };
+
+            if (isEditMode) {
+                await axios.put(`${API_URL}/${id}`, formData, config);
+                setSuccess("Cập nhật phòng chiếu thành công!");
+            } else {
+                await axios.post(API_URL, formData, config);
+                setSuccess("Thêm phòng chiếu thành công!");
+                setFormData({
+                    name: "",
+                    capacity: "",
+                    type: "Standard",
+                    rows: 5,
+                    columns: 10,
+                    status: "active",
+                    description: "",
+                    amenities: []
+                });
+            }
+
+            setTimeout(() => {
+                navigate("/rooms");
+            }, 2000);
+        } catch (err) {
+            setError(err.response?.data?.message || "Có lỗi xảy ra!");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (!isAdmin) {
+        return (
+            <div className="room-container">
+                <div className="error-message">Bạn không có quyền truy cập trang này!</div>
+                <button className="btn btn-primary" onClick={() => navigate("/rooms")}>Quay lại</button>
+            </div>
+        );
+    }
+
+    return (
+        <div className="room-form">
+            <h2 className="room-form-title">{isEditMode ? "✏️ CẬP NHẬT PHÒNG CHIẾU" : "➕ THÊM PHÒNG CHIẾU MỚI"}</h2>
+
+            {error && <div className="error-message">{error}</div>}
+            {success && <div className="success-message">{success}</div>}
+
+            <form onSubmit={handleSubmit}>
+                <div className="form-group">
+                    <label>Tên phòng *</label>
+                    <input type="text" name="name" value={formData.name} onChange={handleChange} required />
+                </div>
+
+                <div className="form-row">
+                    <div className="form-group">
+                        <label>Loại phòng</label>
+                        <select name="type" value={formData.type} onChange={handleChange}>
+                            <option value="Standard">Standard</option>
+                            <option value="VIP">VIP</option>
+                            <option value="IMAX">IMAX</option>
+                            <option value="3D">3D</option>
+                            <option value="4DX">4DX</option>
+                        </select>
+                    </div>
+
+                    <div className="form-group">
+                        <label>Trạng thái</label>
+                        <select name="status" value={formData.status} onChange={handleChange}>
+                            <option value="active">✅ Đang hoạt động</option>
+                            <option value="maintenance">🔧 Đang bảo trì</option>
+                            <option value="inactive">⛔ Ngừng hoạt động</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div className="form-row">
+                    <div className="form-group">
+                        <label>Số hàng ghế</label>
+                        <input type="number" name="rows" value={formData.rows} onChange={handleChange} min="2" max="10" />
+                    </div>
+                    <div className="form-group">
+                        <label>Số cột ghế</label>
+                        <input type="number" name="columns" value={formData.columns} onChange={handleChange} min="5" max="20" />
+                    </div>
+                    <div className="form-group">
+                        <label>Sức chứa (ghế)</label>
+                        <input type="number" name="capacity" value={formData.capacity} readOnly disabled />
+                    </div>
+                </div>
+
+                <div className="form-group">
+                    <label>Tiện ích</label>
+                    <div className="amenities-group">
+                        {amenitiesList.map(amenity => (
+                            <label key={amenity} className="amenity-checkbox">
+                                <input
+                                    type="checkbox"
+                                    checked={formData.amenities.includes(amenity)}
+                                    onChange={() => handleAmenityChange(amenity)}
+                                />
+                                {amenity}
+                            </label>
+                        ))}
+                    </div>
+                </div>
+
+                <div className="form-group">
+                    <label>Mô tả</label>
+                    <textarea name="description" value={formData.description} onChange={handleChange} rows="3"></textarea>
+                </div>
+
+                <div className="form-actions">
+                    <button type="submit" className="btn btn-primary" disabled={loading}>
+                        {loading ? "Đang xử lý..." : (isEditMode ? "Cập nhật" : "Thêm mới")}
+                    </button>
+                    <button type="button" className="btn btn-outline" onClick={() => navigate("/rooms")}>
+                        Hủy bỏ
+                    </button>
+                </div>
+            </form>
+        </div>
+    );
+};
+
+export default RoomForm;
+=== client/src/pages/showtime/RoomList.js ===
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+
+const API_URL = "http://localhost:5000/api/rooms";
+
+const RoomList = () => {
+    const navigate = useNavigate();
+    const [rooms, setRooms] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+
+    // TẠM THỜI SET isAdmin = true ĐỂ TEST
+    const isAdmin = true;
+    
+    // Comment dòng kiểm tra cũ
+    // const user = JSON.parse(localStorage.getItem("user") || "{}");
+    // const isAdmin = user?.isAdmin === true || user?.role === "admin";
+
+    useEffect(() => {
+        fetchRooms();
+    }, []);
+
+    const fetchRooms = async () => {
+        try {
+            setLoading(true);
+            const response = await axios.get(API_URL);
+            setRooms(response.data.data);
+            setError("");
+        } catch (err) {
+            setError("Không thể tải danh sách phòng chiếu");
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleDelete = async (id, name) => {
+        if (window.confirm(`Bạn có chắc muốn xóa phòng "${name}"?`)) {
+            try {
+                const token = localStorage.getItem("token");
+                const config = {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                };
+                await axios.delete(`${API_URL}/${id}`, config);
+                alert("Xóa phòng thành công!");
+                fetchRooms();
+            } catch (err) {
+                console.error("Lỗi xóa:", err);
+                alert(err.response?.data?.message || "Có lỗi xảy ra khi xóa!");
+            }
+        }
+    };
+
+    const getTypeColor = (type) => {
+        const colors = {
+            Standard: "#4caf50",
+            VIP: "#ffd700",
+            IMAX: "#e50914",
+            "3D": "#2196f3",
+            "4DX": "#9c27b0"
+        };
+        return colors[type] || "#b3b3b3";
+    };
+
+    const getStatusText = (status) => {
+        const statusMap = {
+            active: "Đang hoạt động",
+            maintenance: "Đang bảo trì",
+            inactive: "Ngừng hoạt động"
+        };
+        return statusMap[status] || status;
+    };
+
+    if (loading) {
+        return <div className="loading">Đang tải...</div>;
+    }
+
+    if (error) {
+        return <div className="error-message">{error}</div>;
+    }
+
+    return (
+        <div className="room-container">
+            <div className="room-header">
+                <h2 className="room-title">🎬 QUẢN LÝ PHÒNG CHIẾU</h2>
+                {isAdmin && (
+                    <button className="btn btn-primary" onClick={() => navigate("/rooms/add")}>
+                        + Thêm phòng chiếu
+                    </button>
+                )}
+            </div>
+
+            {rooms.length === 0 ? (
+                <div className="room-empty">
+                    <p>Chưa có phòng chiếu nào</p>
+                    {isAdmin && (
+                        <button className="btn btn-primary" onClick={() => navigate("/rooms/add")}>
+                            + Thêm phòng chiếu đầu tiên
+                        </button>
+                    )}
+                </div>
+            ) : (
+                <div className="room-grid">
+                    {rooms.map((room) => (
+                        <div key={room._id} className="room-card">
+                            <div className="room-card-header" style={{ borderColor: getTypeColor(room.type) }}>
+                                <h3 className="room-name">{room.name}</h3>
+                                <span className="room-type" style={{ background: getTypeColor(room.type) }}>
+                                    {room.type}
+                                </span>
+                            </div>
+                            <div className="room-info">
+                                <p><span className="room-label">🎭 Sức chứa:</span> {room.capacity} ghế</p>
+                                <p><span className="room-label">📐 Sơ đồ:</span> {room.rows} x {room.columns}</p>
+                                <p><span className="room-label">📌 Trạng thái:</span> {getStatusText(room.status)}</p>
+                                {room.description && (
+                                    <p><span className="room-label">📝 Mô tả:</span> {room.description}</p>
+                                )}
+                            </div>
+                            {isAdmin && (
+                                <div className="room-actions">
+                                    <button className="btn-edit" onClick={() => navigate(`/rooms/edit/${room._id}`)}>
+                                        ✏️ Sửa
+                                    </button>
+                                    <button className="btn-delete" onClick={() => handleDelete(room._id, room.name)}>
+                                        🗑️ Xóa
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+};
+
+export default RoomList;
+=== server/controllers/roomController.js ===
+const Room = require("../models/Room");
+
+// @desc    Lấy tất cả phòng chiếu
+// @route   GET /api/rooms
+// @access  Public
+exports.getAllRooms = async (req, res) => {
+    try {
+        const rooms = await Room.find().sort({ name: 1 });
+        res.status(200).json({
+            success: true,
+            count: rooms.length,
+            data: rooms
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+// @desc    Lấy chi tiết phòng theo ID
+// @route   GET /api/rooms/:id
+// @access  Public
+exports.getRoomById = async (req, res) => {
+    try {
+        const room = await Room.findById(req.params.id);
+        if (!room) {
+            return res.status(404).json({
+                success: false,
+                message: "Không tìm thấy phòng chiếu"
+            });
+        }
+        res.status(200).json({
+            success: true,
+            data: room
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+// @desc    Tạo phòng chiếu mới
+// @route   POST /api/rooms
+// @access  Admin only
+exports.createRoom = async (req, res) => {
+    try {
+        const { name, capacity, type, rows, columns, description, amenities } = req.body;
+
+        // Kiểm tra tên phòng đã tồn tại chưa
+        const existingRoom = await Room.findOne({ name });
+        if (existingRoom) {
+            return res.status(400).json({
+                success: false,
+                message: "Tên phòng đã tồn tại"
+            });
+        }
+
+        const room = await Room.create({
+            name,
+            capacity,
+            type,
+            rows: rows || 5,
+            columns: columns || 10,
+            description,
+            amenities: amenities || []
+        });
+
+        res.status(201).json({
+            success: true,
+            data: room
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+// @desc    Cập nhật phòng chiếu
+// @route   PUT /api/rooms/:id
+// @access  Admin only
+exports.updateRoom = async (req, res) => {
+    try {
+        const room = await Room.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            { new: true, runValidators: true }
+        );
+        if (!room) {
+            return res.status(404).json({
+                success: false,
+                message: "Không tìm thấy phòng chiếu"
+            });
+        }
+        res.status(200).json({
+            success: true,
+            data: room
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+// @desc    Xóa phòng chiếu
+// @route   DELETE /api/rooms/:id
+// @access  Admin only
+exports.deleteRoom = async (req, res) => {
+    try {
+        const room = await Room.findByIdAndDelete(req.params.id);
+        if (!room) {
+            return res.status(404).json({
+                success: false,
+                message: "Không tìm thấy phòng chiếu"
+            });
+        }
+        res.status(200).json({
+            success: true,
+            message: "Xóa phòng chiếu thành công"
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+// @desc    Lấy danh sách loại phòng
+// @route   GET /api/rooms/types
+// @access  Public
+exports.getRoomTypes = async (req, res) => {
+    try {
+        const types = ["Standard", "VIP", "IMAX", "3D", "4DX"];
+        res.status(200).json({
+            success: true,
+            data: types
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+=== server/models/Room.js ===
+const mongoose = require("mongoose");
+
+const RoomSchema = new mongoose.Schema(
+    {
+        name: {
+            type: String,
+            required: true,
+            unique: true,
+            trim: true
+        },
+        capacity: {
+            type: Number,
+            required: true,
+            min: 10,
+            max: 200
+        },
+        type: {
+            type: String,
+            enum: ["Standard", "VIP", "IMAX", "3D", "4DX"],
+            default: "Standard"
+        },
+        rows: {
+            type: Number,
+            default: 5,
+            min: 2,
+            max: 10
+        },
+        columns: {
+            type: Number,
+            default: 10,
+            min: 5,
+            max: 20
+        },
+        status: {
+            type: String,
+            enum: ["active", "maintenance", "inactive"],
+            default: "active"
+        },
+        description: {
+            type: String,
+            default: ""
+        }
+    },
+    { timestamps: true }
+);
+
+module.exports = mongoose.model("Room", RoomSchema);
+
+=== server/routes/roomRoutes.js ===
+const express = require("express");
+const router = express.Router();
+const roomController = require("../controllers/roomController");
+const { verifyToken, isAdmin } = require("../middlewares/authMiddleware");
+
+// Public routes (ai cũng xem được)
+router.get("/", roomController.getAllRooms);
+router.get("/types", roomController.getRoomTypes);
+router.get("/:id", roomController.getRoomById);
+
+// Admin routes (chỉ admin)
+router.post("/", verifyToken, isAdmin, roomController.createRoom);
+router.put("/:id", verifyToken, isAdmin, roomController.updateRoom);
+router.delete("/:id", verifyToken, isAdmin, roomController.deleteRoom);
+
+module.exports = router;

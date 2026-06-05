@@ -1,68 +1,89 @@
 import React, { useState, useEffect, useCallback } from "react";
 
-const SeatMap = ({ occupiedSeats = [], onSeatsChange, maxSeats, selectedTicketPrice = 0 }) => {
+const SeatMap = ({ occupiedSeats = [], onSeatsChange, maxSeats, selectedTicketPrice = 0, disabled = false, roomName = "RẠP 01", roomType = "" }) => {
   const [seats, setSeats] = useState([]);
+  const [, setSelectedSeats] = useState([]);
+
+  const getSeatPrice = useCallback((isVip) => {
+    if (isVip) return 120000;
+    if (selectedTicketPrice > 0) return selectedTicketPrice;
+    return 69000;
+  }, [selectedTicketPrice]);
 
   const generateSeats = useCallback(() => {
     const rows = ["A", "B", "C", "D", "E", "F", "G", "H"];
     const vipRows = ["F", "G", "H"];
-    const allSeats = [];
-    for (let row of rows) {
-      for (let i = 1; i <= 12; i++) {
+    return rows.flatMap(row =>
+      Array.from({ length: 12 }, (_, i) => {
         const isVip = vipRows.includes(row);
-        allSeats.push({
-          id: `${row}${i}`,
-          row: row,
-          number: i,
+        return {
+          id: `${row}${i + 1}`,
+          row,
+          number: i + 1,
           type: isVip ? "vip" : "normal",
-          price: isVip ? 120000 : selectedTicketPrice,
+          price: getSeatPrice(isVip),
           isSelected: false,
           isOccupied: false,
-        });
-      }
-    }
-    return allSeats;
-  }, [selectedTicketPrice]);
+        };
+      })
+    );
+  }, [getSeatPrice]);
 
   useEffect(() => {
-    const allSeats = generateSeats();
-    setSeats(allSeats.map(seat => ({
-      ...seat,
-      isOccupied: occupiedSeats.includes(seat.id),
-    })));
-  }, [occupiedSeats, selectedTicketPrice, generateSeats]);
+    setSeats(prevSeats =>
+      prevSeats.map(seat => ({
+        ...seat,
+        price: seat.type === "vip" ? 120000 : getSeatPrice(false),
+      }))
+    );
+  }, [selectedTicketPrice, getSeatPrice]);
 
-  const handleSeatClick = (clickedSeat) => {
-    if (clickedSeat.isOccupied) return;
-    
-    const currentSelectedCount = seats.filter(s => s.isSelected).length;
-    if (!clickedSeat.isSelected && currentSelectedCount >= maxSeats) {
-      alert(`Chỉ được chọn ${maxSeats} ghế!`);
+  useEffect(() => {
+    console.log("🎯 SeatMap nhận occupiedSeats:", occupiedSeats);
+    setSeats(prevSeats => {
+      const allSeats = generateSeats();
+      return allSeats.map(seat => ({
+        ...seat,
+        isOccupied: occupiedSeats.includes(seat.id),
+        isSelected: prevSeats.find(s => s.id === seat.id)?.isSelected || false,
+      }));
+    });
+  }, [occupiedSeats, generateSeats]);
+
+  const handleSeatClick = (seat) => {
+    if (disabled) {
+      alert("Bạn đang có vé chờ thanh toán, vui lòng hoàn tất hoặc hủy trước khi chọn ghế mới!");
       return;
     }
-
-    const updatedSeats = seats.map(seat =>
-      seat.id === clickedSeat.id ? { ...seat, isSelected: !seat.isSelected } : seat
-    );
-    setSeats(updatedSeats);
+    if (seat.isOccupied) {
+      alert("Ghế này đã được đặt!");
+      return;
+    }
     
-    const newSelected = updatedSeats.filter(s => s.isSelected);
+    const currentSelectedCount = seats.filter(s => s.isSelected).length;
+    // Nếu đã chọn vé (maxSeats > 0) thì giới hạn số ghế bằng số vé
+    if (maxSeats > 0 && !seat.isSelected && currentSelectedCount >= maxSeats) {
+      alert(`Bạn chỉ được chọn tối đa ${maxSeats} ghế (tương ứng với số vé đã chọn)!`);
+      return;
+    }
+    
+    const updated = seats.map(s =>
+      s.id === seat.id ? { ...s, isSelected: !s.isSelected } : s
+    );
+    setSeats(updated);
+    const newSelected = updated.filter(s => s.isSelected);
+    setSelectedSeats(newSelected);
     onSeatsChange(newSelected);
   };
 
-  // Màu sắc theo yêu cầu:
-  // - Ghế thường (chưa chọn) = xanh lá #4caf50
-  // - Ghế VIP = vàng #ffc107
-  // - Ghế đang chọn = xám #9e9e9e
-  // - Ghế đã đặt = xám đậm #555 + opacity
   const getSeatStyle = (seat) => {
-    let backgroundColor = "#4caf50"; // xanh lá cho ghế thường
+    let backgroundColor = "#4caf50";
     let color = "#fff";
     
-    if (seat.type === "vip") backgroundColor = "#ffc107"; // ghế VIP (vàng)
-    if (seat.isSelected) backgroundColor = "#9e9e9e"; // ghế đang chọn (xám)
+    if (seat.type === "vip") backgroundColor = "#ffc107";
+    if (seat.isSelected) backgroundColor = "#9e9e9e";
     if (seat.isOccupied) {
-      backgroundColor = "#555"; // xám đậm cho đã đặt
+      backgroundColor = "#555";
       color = "#aaa";
     }
     
@@ -84,39 +105,22 @@ const SeatMap = ({ occupiedSeats = [], onSeatsChange, maxSeats, selectedTicketPr
   };
 
   const rows = ["A", "B", "C", "D", "E", "F", "G", "H"];
-  
-  if (seats.length === 0) return <div style={{ textAlign: "center", padding: "60px" }}>Đang tải sơ đồ ghế...</div>;
+  if (seats.length === 0) return <div className="loading-text">Đang tải sơ đồ ghế...</div>;
+
+  const titleDisplay = `🎬 CHỌN GHẾ - ${roomName}${roomType ? ` (${roomType})` : ""}`;
 
   return (
     <div style={{ background: "#1e1e1e", borderRadius: "16px", padding: "24px", margin: "20px 0" }}>
-      <h3 style={{ color: "#e50914", marginBottom: "20px" }}>🎬 CHỌN GHẾ - RẠP 01</h3>
-      
-      {/* Legend */}
+      <h3 style={{ color: "#e50914", marginBottom: "20px" }}>{titleDisplay}</h3>
       <div style={{ display: "flex", justifyContent: "center", gap: "30px", marginBottom: "20px", flexWrap: "wrap" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <div style={{ width: "30px", height: "30px", background: "#4caf50", borderRadius: "6px" }}></div>
-          <span>Ghế thường</span>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <div style={{ width: "30px", height: "30px", background: "#ffc107", borderRadius: "6px" }}></div>
-          <span>Ghế VIP (120k)</span>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <div style={{ width: "30px", height: "30px", background: "#9e9e9e", borderRadius: "6px" }}></div>
-          <span>Ghế đang chọn</span>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <div style={{ width: "30px", height: "30px", background: "#555", borderRadius: "6px" }}></div>
-          <span>Ghế đã đặt</span>
-        </div>
+        <div><span style={{ display: "inline-block", width: "30px", height: "30px", background: "#4caf50", borderRadius: "6px", marginRight: "8px" }}></span>Ghế thường</div>
+        <div><span style={{ display: "inline-block", width: "30px", height: "30px", background: "#ffc107", borderRadius: "6px", marginRight: "8px" }}></span>Ghế VIP (120k)</div>
+        <div><span style={{ display: "inline-block", width: "30px", height: "30px", background: "#9e9e9e", borderRadius: "6px", marginRight: "8px" }}></span>Ghế đang chọn</div>
+        <div><span style={{ display: "inline-block", width: "30px", height: "30px", background: "#555", borderRadius: "6px", marginRight: "8px" }}></span>Ghế đã đặt / đang giữ</div>
       </div>
-      
-      {/* Screen */}
       <div style={{ background: "linear-gradient(180deg, #444, #1a1a1a)", width: "80%", height: "50px", margin: "0 auto 30px", borderRadius: "8px 8px 0 0", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold" }}>
         SCREEN
       </div>
-      
-      {/* Ghế */}
       <div style={{ overflowX: "auto" }}>
         {rows.map(row => (
           <div key={row} style={{ display: "flex", justifyContent: "center", gap: "8px", marginBottom: "10px" }}>

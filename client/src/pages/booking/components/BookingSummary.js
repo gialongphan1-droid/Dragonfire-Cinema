@@ -1,7 +1,10 @@
 import React from "react";
 
-const BookingSummary = ({ selectedSeats, ticketInfo, totalPrice, onConfirm, onCancel, loading }) => {
+
+const BookingSummary = ({ selectedSeats, ticketInfo, totalPrice, onConfirm, onCancel, loading, disabled = false }) => {
   const formatPrice = (p) => new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(p);
+
+  console.log("📊 BookingSummary - totalPrice:", totalPrice, "selectedSeats:", selectedSeats);
 
   if (ticketInfo.totalSeats === 0 && selectedSeats.length === 0) {
     return (
@@ -67,10 +70,18 @@ const BookingSummary = ({ selectedSeats, ticketInfo, totalPrice, onConfirm, onCa
       </div>
 
       <div style={{ display: "flex", gap: "12px" }}>
-        <button onClick={onConfirm} disabled={loading || (ticketInfo.totalSeats === 0 && selectedSeats.length === 0)} style={{ flex: 2, background: "#e50914", padding: "12px", fontSize: "16px", border: "none", borderRadius: "5px", color: "#fff", cursor: "pointer" }}>
+        <button 
+          onClick={onConfirm} 
+          disabled={loading || disabled || (ticketInfo.totalSeats === 0 && selectedSeats.length === 0)} 
+          style={{ flex: 2, background: "#e50914", padding: "12px", fontSize: "16px", border: "none", borderRadius: "5px", color: "#fff", cursor: "pointer" }}
+        >
           {loading ? "Đang xử lý..." : "🎟️ Xác nhận đặt vé"}
         </button>
-        <button onClick={onCancel} disabled={loading} style={{ flex: 1, background: "#333", padding: "12px", fontSize: "16px", border: "none", borderRadius: "5px", color: "#fff", cursor: "pointer" }}>
+        <button 
+          onClick={onCancel} 
+          disabled={loading} 
+          style={{ flex: 1, background: "#333", padding: "12px", fontSize: "16px", border: "none", borderRadius: "5px", color: "#fff", cursor: "pointer" }}
+        >
           Hủy
         </button>
       </div>

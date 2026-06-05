@@ -1,6 +1,5 @@
 const Payment = require('../models/Payment');
 const Booking = require('../models/Booking');
-
 const nodemailer = require('nodemailer');
 
 // HÀM 1: Khởi tạo giao dịch thanh toán mới
@@ -165,4 +164,3 @@ exports.updatePaymentStatus = async (req, res) => {
         return res.status(500).json({ success: false, message: error.message });
     }
 };
-

@@ -1,12 +1,34 @@
 const Showtime = require("../models/Showtime");
 const Movie = require("../models/Movie");
 const Room = require("../models/Room");
+const Booking = require("../models/Booking"); 
 
-// Lấy tất cả suất chiếu
+// Thêm helper này (đặt sau const Booking = require("../models/Booking"))
+const getAvailableSeatsCount = async (showtimeId) => {
+  const showtime = await Showtime.findById(showtimeId).select("seats");
+  if (!showtime) return 0;
+  const totalSeats = showtime.seats.length; // 96
+  const bookedSeats = showtime.seats.filter(seat => seat.isBooked === true).length;
+  return totalSeats - bookedSeats;
+};
+
+
+// Lấy tất cả suất chiếu (có kèm số ghế trống)
 exports.getAllShowtimes = async (req, res) => {
     try {
-        const data = await Showtime.find().populate("movieId").populate("roomId");
-        res.status(200).json({ success: true, data });
+        const showtimes = await Showtime.find().populate("movieId").populate("roomId");
+        
+        // Thêm availableSeats vào mỗi suất chiếu
+        const showtimesWithSeats = await Promise.all(showtimes.map(async (st) => {
+            const availableSeats = await getAvailableSeatsCount(st._id);
+            return {
+                ...st._doc,
+                availableSeats: availableSeats,
+                totalSeats: st.seats?.length || 0
+            };
+        }));
+        
+        res.status(200).json({ success: true, data: showtimesWithSeats });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
@@ -83,19 +105,19 @@ exports.createShowtime = async (req, res) => {
 
         // Tạo seats dựa trên số hàng và cột của phòng
         const seats = [];
-        const rows = room.rows || 5;
-        const cols = room.columns || 10;
-        const rowLetters = ["A", "B", "C", "D", "E", "F", "G", "H"];
+        const rows = ["A", "B", "C", "D", "E", "F", "G", "H"];
+        const vipRows = ["F", "G", "H"];
 
-        for (let i = 0; i < rows; i++) {
-            for (let j = 1; j <= cols; j++) {
-                seats.push({
-                    seatNumber: `${rowLetters[i]}${j}`,
-                    seatType: room.type === "VIP" ? "VIP" : "Standard",
-                    isBooked: false,
-                });
-            }
-        }
+        for (let i = 0; i < rows.length; i++) {
+         for (let j = 1; j <= 12; j++) {
+             seats.push({
+             seatNumber: `${rows[i]}${j}`,
+             seatType: vipRows.includes(rows[i]) ? "VIP" : "Standard",
+            isBooked: false,
+    });
+  }
+}
+
 
         const showtime = await Showtime.create({
             movieId,

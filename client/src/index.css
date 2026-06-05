@@ -1865,6 +1865,33 @@ button:disabled {
 .showtime-group-seats.seats-low {
   color: var(--error-color);
 }
+/* Loại vé */
+.ticket-info {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.ticket-info p {
+  margin-bottom: 0.5rem;
+}
+
+.ticket-type-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px dashed #333;
+  color: var(--text-secondary);
+}
+
+.ticket-type-item span:last-child {
+  color: var(--accent-color);
+  font-weight: bold;
+}
+
+.no-ticket {
+  color: var(--text-secondary);
+  font-style: italic;
+}
 
 /* ===== PAYMENT PAGE CSS CỦA ĐẠT ===== */
 .payment-page-container {
@@ -2063,7 +2090,8 @@ button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
-/* ===== MODAL CSS CỦA ĐẠT ===== */
+
+/* ===== MODAL CSS ===== */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -2169,7 +2197,7 @@ button:disabled {
   background: var(--primary-dark);
 }
 
-/* ===== PAYMENT RESULT PAGE CSS CỦA ĐẠT ===== */
+/* ===== PAYMENT RESULT PAGE CSS ===== */
 .payment-result-container {
   min-height: 70vh;
   display: flex;
