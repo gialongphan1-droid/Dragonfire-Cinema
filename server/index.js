@@ -27,18 +27,30 @@ app.use("/api/auth", require("./routes/authRoutes"));
 // Sau các route khác
 const movieRoutes = require("./routes/movieRoutes");
 app.use("/api/movies", movieRoutes);
-// lịch chiếu 
+// lịch chiếu
 const showtimeRoutes = require("./routes/showtimeRoutes");
 app.use("/api/showtimes", showtimeRoutes);
-// dặt vé
+// đặt vé
 const bookingRoutes = require("./routes/bookingRoutes");
 app.use("/api/bookings", bookingRoutes);
 const roomRoutes = require("./routes/roomRoutes");
 app.use("/api/rooms", roomRoutes);
 
+// ✅ THÊM ROUTE VOUCHER
+const voucherRoutes = require("./routes/voucherRoutes");
+app.use("/api/vouchers", voucherRoutes);
+
 // Test route
 app.get("/api/test", (req, res) => {
 	res.json({ message: "API đang hoạt động!" });
+});
+
+// Thêm route current-time
+app.get("/api/current-time", (req, res) => {
+	res.json({
+		success: true,
+		currentTime: new Date().toISOString(),
+	});
 });
 
 // Error handling middleware

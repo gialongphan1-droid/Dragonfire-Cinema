@@ -5,6 +5,7 @@ const { verifyToken, isAdmin } = require("../middlewares/authMiddleware");
 
 // Public routes
 router.get("/", movieController.getMovies);
+router.get("/home", movieController.getMoviesForHome);  // Route mới cho Home
 router.get("/:id", movieController.getMovieById);
 
 // Admin routes

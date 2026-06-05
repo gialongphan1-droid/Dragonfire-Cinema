@@ -1,19 +1,46 @@
 const Showtime = require("../models/Showtime");
 const Movie = require("../models/Movie");
 const Room = require("../models/Room");
+const Booking = require("../models/Booking");
 
 // Lấy tất cả suất chiếu
-exports.getAllShowtimes = async (req, res) => {
+const getAllShowtimes = async (req, res) => {
     try {
-        const data = await Showtime.find().populate("movieId").populate("roomId");
-        res.status(200).json({ success: true, data });
+        const showtimes = await Showtime.find()
+            .populate("movieId")
+            .populate("roomId")
+            .sort({ startTime: -1 });
+
+        for (let showtime of showtimes) {
+            const bookings = await Booking.find({
+                showtimeId: showtime._id,
+                status: { $in: ["pending", "completed"] },
+            });
+            const bookedSeatsFromBooking = bookings.flatMap((b) => b.seats);
+
+            const allBookedSeats = [
+                ...new Set([
+                    ...(showtime.bookedSeats || []),
+                    ...bookedSeatsFromBooking,
+                ]),
+            ];
+
+            const totalSeats = showtime.seats?.length || showtime.availableSeats || 100;
+            const availableSeats = totalSeats - allBookedSeats.length;
+
+            showtime._doc.bookedSeats = allBookedSeats;
+            showtime._doc.availableSeatsCount = availableSeats;
+            showtime._doc.totalSeats = totalSeats;
+        }
+
+        res.status(200).json({ success: true, data: showtimes });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
 };
 
 // Lấy suất chiếu theo phim
-exports.getShowtimesByMovie = async (req, res) => {
+const getShowtimesByMovie = async (req, res) => {
     try {
         const { movieId } = req.params;
         const data = await Showtime.find({ movieId }).sort({ startTime: 1 });
@@ -24,9 +51,11 @@ exports.getShowtimesByMovie = async (req, res) => {
 };
 
 // Lấy chi tiết suất chiếu theo ID
-exports.getShowtimeById = async (req, res) => {
+const getShowtimeById = async (req, res) => {
     try {
-        const data = await Showtime.findById(req.params.id).populate("movieId").populate("roomId");
+        const data = await Showtime.findById(req.params.id)
+            .populate("movieId")
+            .populate("roomId");
         if (!data) {
             return res.status(404).json({ success: false, message: "Không tìm thấy suất chiếu" });
         }
@@ -37,20 +66,34 @@ exports.getShowtimeById = async (req, res) => {
 };
 
 // Lấy danh sách ghế trống
-exports.getAvailableSeats = async (req, res) => {
+const getAvailableSeats = async (req, res) => {
     try {
         const showtime = await Showtime.findById(req.params.id);
         if (!showtime) {
             return res.status(404).json({ success: false, message: "Không tìm thấy suất chiếu" });
         }
-        const availableSeats = showtime.seats.filter(seat => !seat.isBooked);
+
+        const bookings = await Booking.find({
+            showtimeId: req.params.id,
+            status: { $in: ["pending", "completed"] },
+        });
+        const bookedSeatsFromBooking = bookings.flatMap((b) => b.seats);
+
+        const seats = showtime.seats.map((seat) => ({
+            ...seat.toObject(),
+            isBooked: seat.isBooked || bookedSeatsFromBooking.includes(seat.seatNumber),
+        }));
+
+        const availableSeats = seats.filter((seat) => !seat.isBooked);
+
         res.status(200).json({
             success: true,
             data: {
-                total: showtime.seats.length,
+                total: seats.length,
                 available: availableSeats.length,
-                seats: availableSeats
-            }
+                seats: availableSeats,
+                allSeats: seats,
+            },
         });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -58,19 +101,21 @@ exports.getAvailableSeats = async (req, res) => {
 };
 
 // Tạo suất chiếu mới
-exports.createShowtime = async (req, res) => {
+const createShowtime = async (req, res) => {
     try {
-        const { movieId, cinemaName, roomId, startTime } = req.body;
+        const { movieId, cinemaName, roomId, startTime, price, rows, columns } = req.body;
 
-        if (!movieId || !cinemaName || !roomId || !startTime ) {
+        if (!movieId || !cinemaName || !roomId || !startTime) {
             return res.status(400).json({ success: false, message: "Vui lòng nhập đầy đủ thông tin" });
         }
 
-        // Kiểm tra thời gian trong tương lai
         const serverNow = new Date();
         const selectedTime = new Date(startTime);
         if (selectedTime <= serverNow) {
-            return res.status(400).json({ success: false, message: "Thời gian chiếu không hợp lệ! Phải chọn thời gian trong tương lai." });
+            return res.status(400).json({
+                success: false,
+                message: "Thời gian chiếu không hợp lệ! Phải chọn thời gian trong tương lai.",
+            });
         }
 
         const movie = await Movie.findById(movieId);
@@ -81,18 +126,18 @@ exports.createShowtime = async (req, res) => {
 
         const endTime = new Date(new Date(startTime).getTime() + movie.duration * 60000);
 
-        // Tạo seats dựa trên số hàng và cột của phòng
-        const seats = [];
-        const rows = room.rows || 5;
-        const cols = room.columns || 10;
+        const finalRows = rows || room.rows || 5;
+        const finalCols = columns || room.columns || 10;
         const rowLetters = ["A", "B", "C", "D", "E", "F", "G", "H"];
 
-        for (let i = 0; i < rows; i++) {
-            for (let j = 1; j <= cols; j++) {
+        const seats = [];
+        for (let i = 0; i < finalRows; i++) {
+            for (let j = 1; j <= finalCols; j++) {
                 seats.push({
                     seatNumber: `${rowLetters[i]}${j}`,
                     seatType: room.type === "VIP" ? "VIP" : "Standard",
                     isBooked: false,
+                    isLocked: false,
                 });
             }
         }
@@ -105,10 +150,18 @@ exports.createShowtime = async (req, res) => {
             roomName: room.name,
             startTime,
             endTime,
-            seats,
+            price: price || 90000,
+            seats: seats,
+            availableSeats: seats.length,
+            rows: finalRows,
+            columns: finalCols,
         });
 
-        res.status(201).json({ success: true, data: showtime });
+        res.status(201).json({
+            success: true,
+            message: "Thêm suất chiếu thành công!",
+            data: showtime,
+        });
     } catch (error) {
         console.error("Server error:", error);
         res.status(500).json({ success: false, message: error.message });
@@ -116,37 +169,38 @@ exports.createShowtime = async (req, res) => {
 };
 
 // Cập nhật suất chiếu
-exports.updateShowtime = async (req, res) => {
+const updateShowtime = async (req, res) => {
     try {
         const { startTime } = req.body;
-        
-        // Kiểm tra thời gian trong tương lai
+
         if (startTime) {
             const serverNow = new Date();
             const selectedTime = new Date(startTime);
             if (selectedTime <= serverNow) {
-                return res.status(400).json({ success: false, message: "Thời gian chiếu không hợp lệ! Phải chọn thời gian trong tương lai." });
+                return res.status(400).json({
+                    success: false,
+                    message: "Thời gian chiếu không hợp lệ! Phải chọn thời gian trong tương lai.",
+                });
             }
         }
-        
-        const data = await Showtime.findByIdAndUpdate(
-            req.params.id,
-            req.body,
-            { new: true, runValidators: true }
-        );
-        
+
+        const data = await Showtime.findByIdAndUpdate(req.params.id, req.body, {
+            new: true,
+            runValidators: true,
+        });
+
         if (!data) {
             return res.status(404).json({ success: false, message: "Không tìm thấy suất chiếu" });
         }
-        
-        res.status(200).json({ success: true, data });
+
+        res.status(200).json({ success: true, message: "Cập nhật thành công!", data });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
 };
 
 // Xóa suất chiếu
-exports.deleteShowtime = async (req, res) => {
+const deleteShowtime = async (req, res) => {
     try {
         const showtime = await Showtime.findByIdAndDelete(req.params.id);
         if (!showtime) {
@@ -156,4 +210,143 @@ exports.deleteShowtime = async (req, res) => {
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
+};
+
+// ============================================
+// QUẢN LÝ KHÓA/MỞ KHÓA GHẾ (ADMIN)
+// ============================================
+
+// Khóa ghế
+const lockSeats = async (req, res) => {
+    try {
+        const { showtimeId, seats } = req.body;
+
+        const showtime = await Showtime.findById(showtimeId);
+        if (!showtime) {
+            return res.status(404).json({ success: false, message: "Không tìm thấy suất chiếu" });
+        }
+
+        const alreadyLocked = seats.filter((s) => showtime.lockedSeats?.includes(s));
+        if (alreadyLocked.length > 0) {
+            return res.status(400).json({
+                success: false,
+                message: `Ghế ${alreadyLocked.join(", ")} đã bị khóa!`,
+            });
+        }
+
+        const bookings = await Booking.find({
+            showtimeId,
+            status: { $in: ["pending", "completed"] },
+            seats: { $in: seats },
+        });
+
+        if (bookings.length > 0) {
+            const bookedSeats = bookings.flatMap((b) => b.seats);
+            const conflictSeats = seats.filter((s) => bookedSeats.includes(s));
+            return res.status(400).json({
+                success: false,
+                message: `Ghế ${conflictSeats.join(", ")} đã được đặt, không thể khóa!`,
+            });
+        }
+
+        showtime.lockedSeats = [...new Set([...(showtime.lockedSeats || []), ...seats])];
+
+        if (showtime.seats && showtime.seats.length > 0) {
+            showtime.seats = showtime.seats.map((seat) => ({
+                ...seat.toObject(),
+                isLocked: showtime.lockedSeats.includes(seat.seatNumber),
+            }));
+        }
+
+        await showtime.save();
+
+        res.json({
+            success: true,
+            message: `Đã khóa ${seats.length} ghế thành công!`,
+            lockedSeats: showtime.lockedSeats,
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// Mở khóa ghế
+const unlockSeats = async (req, res) => {
+    try {
+        const { showtimeId, seats } = req.body;
+
+        const showtime = await Showtime.findById(showtimeId);
+        if (!showtime) {
+            return res.status(404).json({ success: false, message: "Không tìm thấy suất chiếu" });
+        }
+
+        showtime.lockedSeats = (showtime.lockedSeats || []).filter((s) => !seats.includes(s));
+
+        if (showtime.seats && showtime.seats.length > 0) {
+            showtime.seats = showtime.seats.map((seat) => ({
+                ...seat.toObject(),
+                isLocked: showtime.lockedSeats.includes(seat.seatNumber),
+            }));
+        }
+
+        await showtime.save();
+
+        res.json({
+            success: true,
+            message: `Đã mở khóa ${seats.length} ghế thành công!`,
+            lockedSeats: showtime.lockedSeats,
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// Lấy danh sách ghế kèm trạng thái
+const getSeatsStatus = async (req, res) => {
+    try {
+        const showtime = await Showtime.findById(req.params.id);
+        if (!showtime) {
+            return res.status(404).json({ success: false, message: "Không tìm thấy suất chiếu" });
+        }
+
+        const bookings = await Booking.find({
+            showtimeId: req.params.id,
+            status: { $in: ["pending", "completed"] },
+        });
+        const bookedSeats = bookings.flatMap((b) => b.seats);
+
+        const seatsStatus = (showtime.seats || []).map((seat) => ({
+            seatNumber: seat.seatNumber,
+            seatType: seat.seatType,
+            isBooked: bookedSeats.includes(seat.seatNumber),
+            isLocked: (showtime.lockedSeats || []).includes(seat.seatNumber),
+            isAvailable: !bookedSeats.includes(seat.seatNumber) && !(showtime.lockedSeats || []).includes(seat.seatNumber),
+        }));
+
+        res.json({
+            success: true,
+            data: {
+                totalSeats: seatsStatus.length,
+                availableSeats: seatsStatus.filter((s) => s.isAvailable).length,
+                bookedSeats: seatsStatus.filter((s) => s.isBooked).length,
+                lockedSeats: seatsStatus.filter((s) => s.isLocked).length,
+                seats: seatsStatus,
+            },
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+module.exports = {
+    getAllShowtimes,
+    getShowtimesByMovie,
+    getShowtimeById,
+    getAvailableSeats,
+    createShowtime,
+    updateShowtime,
+    deleteShowtime,
+    lockSeats,
+    unlockSeats,
+    getSeatsStatus,
 };

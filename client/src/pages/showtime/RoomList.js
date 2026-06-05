@@ -10,12 +10,9 @@ const RoomList = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
-    // TẠM THỜI SET isAdmin = true ĐỂ TEST
-    const isAdmin = true;
-    
-    // Comment dòng kiểm tra cũ
-    // const user = JSON.parse(localStorage.getItem("user") || "{}");
-    // const isAdmin = user?.isAdmin === true || user?.role === "admin";
+    // ✅ LẤY isAdmin TỪ localStorage
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const isAdmin = user?.isAdmin === true || user?.role === "admin";
 
     useEffect(() => {
         fetchRooms();
@@ -24,7 +21,9 @@ const RoomList = () => {
     const fetchRooms = async () => {
         try {
             setLoading(true);
-            const response = await axios.get(API_URL);
+            const token = localStorage.getItem("token");
+            const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+            const response = await axios.get(API_URL, config);
             setRooms(response.data.data);
             setError("");
         } catch (err) {
@@ -36,13 +35,16 @@ const RoomList = () => {
     };
 
     const handleDelete = async (id, name) => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            alert("Vui lòng đăng nhập để thực hiện thao tác này!");
+            return;
+        }
+
         if (window.confirm(`Bạn có chắc muốn xóa phòng "${name}"?`)) {
             try {
-                const token = localStorage.getItem("token");
                 const config = {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
+                    headers: { Authorization: `Bearer ${token}` },
                 };
                 await axios.delete(`${API_URL}/${id}`, config);
                 alert("Xóa phòng thành công!");

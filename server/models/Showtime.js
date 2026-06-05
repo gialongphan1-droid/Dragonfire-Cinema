@@ -17,9 +17,12 @@ const ShowtimeSchema = new mongoose.Schema(
 		roomName: { type: String, required: true },
 		startTime: { type: Date, required: true },
 		endTime: { type: Date, required: true },
+		price: { type: Number, default: 90000 },
+		availableSeats: { type: Number, default: 100 },
+		rows: { type: Number, default: 5 },
+		columns: { type: Number, default: 10 },
 		seats: [
 			{
-				
 				seatNumber: String,
 				seatType: {
 					type: String,
@@ -27,8 +30,11 @@ const ShowtimeSchema = new mongoose.Schema(
 					default: "Standard",
 				},
 				isBooked: { type: Boolean, default: false },
+				isLocked: { type: Boolean, default: false },
 			},
 		],
+		bookedSeats: { type: [String], default: [] },
+		lockedSeats: { type: [String], default: [] },
 	},
 	{ timestamps: true },
 );

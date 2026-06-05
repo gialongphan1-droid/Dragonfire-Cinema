@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import authService from "../../services/authService";
-import Header from "../Header";
-import Footer from "../Footer";
+// ✅ Đã xóa import Header và Footer
 
 const Register = () => {
     const [name, setName] = useState("");
@@ -50,7 +49,7 @@ const Register = () => {
 
     return (
         <div className="register-container">
-            <Header />
+            {/* ✅ Đã xóa <Header /> */}
             <main className="register-main">
                 <div className="register-card">
                     <h2 className="register-title">ĐĂNG KÝ</h2>
@@ -116,7 +115,7 @@ const Register = () => {
                     </p>
                 </div>
             </main>
-            <Footer />
+            {/* ✅ Đã xóa <Footer /> */}
         </div>
     );
 };

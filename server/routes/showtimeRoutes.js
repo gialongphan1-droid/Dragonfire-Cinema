@@ -3,21 +3,30 @@ const router = express.Router();
 const showtimeController = require("../controllers/showtimeController");
 const { verifyToken, isAdmin } = require("../middlewares/authMiddleware");
 
-// === PUBLIC ROUTES (Ai cũng xem được) ===
-router.get("/test", (req, res) => {
-	res.json({
-		message: "Đường truyền API Lịch chiếu & Phòng của HOÀNG hoạt động tốt!",
-	});
-});
-
+// === PUBLIC ROUTES ===
 router.get("/", showtimeController.getAllShowtimes);
 router.get("/movie/:movieId", showtimeController.getShowtimesByMovie);
 router.get("/:id", showtimeController.getShowtimeById);
 router.get("/:id/seats", showtimeController.getAvailableSeats);
 
-// === ADMIN ROUTES (Chỉ admin mới được thêm/sửa/xóa) ===
+// === ADMIN ROUTES ===
 router.post("/", verifyToken, isAdmin, showtimeController.createShowtime);
 router.put("/:id", verifyToken, isAdmin, showtimeController.updateShowtime);
 router.delete("/:id", verifyToken, isAdmin, showtimeController.deleteShowtime);
+
+// === ADMIN ROUTES - QUẢN LÝ KHÓA GHẾ ===
+router.post("/lock-seats", verifyToken, isAdmin, showtimeController.lockSeats);
+router.post(
+	"/unlock-seats",
+	verifyToken,
+	isAdmin,
+	showtimeController.unlockSeats,
+);
+router.get(
+	"/:id/seats-status",
+	verifyToken,
+	isAdmin,
+	showtimeController.getSeatsStatus,
+);
 
 module.exports = router;
