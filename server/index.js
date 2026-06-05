@@ -34,6 +34,8 @@ app.use("/api/showtimes", showtimeRoutes);
 // dặt vé
 const bookingRoutes = require("./routes/bookingRoutes");
 app.use("/api/bookings", bookingRoutes);
+const roomRoutes = require("./routes/roomRoutes");
+app.use("/api/rooms", roomRoutes);
 
 // Test route
 app.get("/api/test", (req, res) => {

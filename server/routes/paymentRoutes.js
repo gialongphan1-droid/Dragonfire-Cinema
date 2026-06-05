@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const paymentController = require('../controllers/paymentController');
+const { verifyToken } = require('../middlewares/authMiddleware');
 
-// Route 1 của Đạt đã có sẵn:
-router.post('/create', paymentController.createPayment);
-
-// THÊM ROUTE NÀY VÀO ĐỂ XỬ LÝ CHỐT ĐƠN + GỬI MAIL:
-router.post('/execute', paymentController.executePayment);
+// Tất cả route đều cần xác thực
+router.post('/create', verifyToken, paymentController.createPayment);
+router.post('/execute', verifyToken, paymentController.executePayment);
+router.post('/update-status', verifyToken, paymentController.updatePaymentStatus);
 
 module.exports = router;

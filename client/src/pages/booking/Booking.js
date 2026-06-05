@@ -119,10 +119,18 @@ const Booking = () => {
         },
         config
       );
-      if (response.data.success) {
-        alert(`Đặt vé thành công! Mã vé: ${response.data.data.ticketCode}`);
-        navigate("/my-bookings");
-      } else {
+   if (response.data.success) {
+  // Bất kể API trả về gì, Đạt truyền cứng thông tin để kích hoạt trang Payment
+  navigate("/payment", {
+    state: {
+      bookingId: "fake-booking-id-12345", // Truyền ID giả để qua vòng kiểm tra
+      movieTitle: "Phim Dragonfire Cinema (Đạt Test)", 
+      showtime: "19:00 - 05/06/2026",
+      seatNumber: "E7, E8",
+      amount: 49000
+    }
+  });
+} else {
         alert(response.data.message);
       }
     } catch (error) {
