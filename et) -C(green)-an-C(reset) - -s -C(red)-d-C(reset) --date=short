@@ -1,0 +1,207 @@
+[33mcommit b9b2f70105793a02c8c0e37b7ab8ec85a5ad640b[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfeature/auth-diem-thuong[m[33m, [m[1;31morigin/feature/payment-dat[m[33m, [m[1;31morigin/feature/auth-diem-thuong[m[33m)[m
+Author: Tien Dat <tiendat2729@gmail.com>
+Date:   Sat Jun 6 06:31:56 2026 +0700
+
+    feat: hoan thien module thanh toán cua Dat
+    
+    Them trang thanh toan voi Momo va VNPay
+    - Them modal xac nhan huy giao dich
+    - Them trang thong bao ket qua thanh toan
+    - Cap nhat route /payment/result trong App.js
+    - Liên kết thanh toán với trang booking cua Hieu
+
+[33mcommit b422a5cbd6c3415d8b60de28eb16cc5ad9a3c215[m
+Author: Tien Dat <tiendat2729@gmail.com>
+Date:   Fri Jun 5 23:05:17 2026 +0700
+
+    merge: resolve conflict for payment module
+
+[33mcommit 0d1a51f36e6d4bd89b4e7473ab0f1d6c49f5652c[m
+Merge: e09b994 5b3ab4e
+Author: Tien Dat <tiendat2729@gmail.com>
+Date:   Fri Jun 5 11:12:32 2026 +0700
+
+    up code moi
+
+[33mcommit e09b994c96602c00b2db9beb4e4f4adb76051455[m
+Author: Tien Dat <tiendat2729@gmail.com>
+Date:   Fri Jun 5 00:31:09 2026 +0700
+
+    update: hoàn thiện logic
+
+[33mcommit 5b3ab4efec4f0c04bc40f6b6ff2407aa9c005288[m
+Author: Hoàng Minh Hiếu _DH52300542 <hieuminh230205@gmail.com>
+Date:   Thu Jun 4 23:30:01 2026 +0700
+
+    Xóa giá vé khỏi toàn bộ hệ thống showtime
+
+[33mcommit 552b9833d028e72fc00618a80177ad0c125cbafe[m
+Author: Hoàng Minh Hiếu _DH52300542 <hieuminh230205@gmail.com>
+Date:   Thu Jun 4 20:01:30 2026 +0700
+
+    Gộp route từ showtime và booking
+
+[33mcommit dc838faa2d8859b695141a078e49318be7f5e412[m
+Author: Hoàng Minh Hiếu _DH52300542 <hieuminh230205@gmail.com>
+Date:   Thu Jun 4 19:04:53 2026 +0700
+
+    Cập nhật toàn bộ code showtime từ remote feature/showtime
+
+[33mcommit 8673a65a586face3c647fcc44d2c8ddffd82d9d1[m
+Merge: 9559de2 e496202
+Author: Tien Dat <tiendat2729@gmail.com>
+Date:   Thu Jun 4 18:43:17 2026 +0700
+
+    merge: ket hop backend giua dat va hieu
+
+[33mcommit 9559de22674d8c6839671f73bd06a7d080cbb0d3[m
+Author: Tien Dat <tiendat2729@gmail.com>
+Date:   Thu Jun 4 18:30:13 2026 +0700
+
+    feat: hoan thanh route va khung frontend payment
+
+[33mcommit 33000a8c56a8a55567b0fac4ac2310a966e625d9[m
+Author: Tien Dat <tiendat2729@gmail.com>
+Date:   Thu Jun 4 18:03:38 2026 +0700
+
+    feat: luu code payment
+
+[33mcommit c75d013f7ac5817df3b3178049c90564cbda2ebf[m
+Author: Tien Dat <tiendat2729@gmail.com>
+Date:   Thu Jun 4 17:21:58 2026 +0700
+
+    feat: luu code payment
+
+[33mcommit e49620219ed59d4157fd766a7ff8eeee974bfa63[m
+Author: Hoàng Minh Hiếu _DH52300542 <hieuminh230205@gmail.com>
+Date:   Thu Jun 4 13:47:01 2026 +0700
+
+    feat: hoàn thiện module booking (đặt vé, chọn ghế, lịch sử, hủy vé)
+
+[33mcommit 234ff517a6a75e76a668d4be6f125facf509cd4e[m
+Author: Lê Văn Long <email@example.com>
+Date:   Wed Jun 3 23:06:55 2026 +0700
+
+    tính năng quản lý phim và lịch chiếu đặt vé
+
+[33mcommit 97ef697e087f917fa3e8aafde7e2ca3dd891ebb2[m
+Author: Lê Văn Long <email@example.com>
+Date:   Wed Jun 3 00:55:10 2026 +0700
+
+    tính năng quản lý phim và sửa lại header
+
+[33mcommit 6c2b510b53e830bd3001d66436026a9191196b9b[m
+Author: Tien Dat <tiendat2729@gmail.com>
+Date:   Tue Jun 2 23:43:27 2026 +0700
+
+    feat: hoan thien model, controller va routes cho module payment
+
+[33mcommit 20a68cc96cc91cc08c839643a5c7816d065b8a25[m
+Author: Lê Văn Long <email@example.com>
+Date:   Tue Jun 2 22:59:46 2026 +0700
+
+    feat: cập nhật auth files từ feature/auth-diem-thuong
+
+[33mcommit f5704957a8939b188de2780799fe1a998537e93e[m
+Author: Lê Văn Long <email@example.com>
+Date:   Tue Jun 2 22:58:11 2026 +0700
+
+    save: lưu thay đổi trước khi lấy auth files
+
+[33mcommit 92f02096cf9db25694a89c88918cd9bceff118d6[m
+Author: Lê Văn Long <email@example.com>
+Date:   Tue Jun 2 22:56:56 2026 +0700
+
+    tạm thời: lưu thay đổi trước khi lấy auth files
+
+[33mcommit 2dadcf52a9b76cb7cf92d657d99048fb7e7f4f93[m
+Author: Lê Văn Long <email@example.com>
+Date:   Tue Jun 2 17:35:14 2026 +0700
+
+    them dat ve
+
+[33mcommit 7d3118a504eecfd0ad876439f48b67af4f53267e[m[33m ([m[1;31morigin/dev[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Author: gialongphan1-droid <gialongphan1@gmail.com>
+Date:   Tue Jun 2 05:14:20 2026 +0700
+
+    Clarify CSS class usage for team members
+    
+    Updated wording for CSS usage clarification.
+
+[33mcommit 899f8eb6e7943b30c7f200f509ff240b6d1e11d6[m
+Author: Long Phan <gialongphan1@gmail.com>
+Date:   Tue Jun 2 05:06:12 2026 +0700
+
+    soan lai readme ve quy tac css
+
+[33mcommit 1a1bc0cb5d063cf20ea7f3c7f73bf81ec08ab965[m[33m ([m[1;32mdev[m[33m)[m
+Author: Long Phan <gialongphan1@gmail.com>
+Date:   Tue Jun 2 04:50:33 2026 +0700
+
+    tap trung vao index.css
+
+[33mcommit 8b8ea71ef9bd0434bc94e29bfb38e079e8860d0d[m
+Author: Long Phan <gialongphan1@gmail.com>
+Date:   Tue Jun 2 04:21:03 2026 +0700
+
+    feat: hoan thien module auth, css toan cuc, co dau, khong icon
+
+[33mcommit 24c2b2e3faaf1f127c2309ef366884db072e6b7b[m
+Author: Long Phan <gialongphan1@gmail.com>
+Date:   Mon Jun 1 22:53:16 2026 +0700
+
+    Xóa node_modules khỏi repository
+
+[33mcommit d9aaec315590e36beabff0a88b349dbe0f717815[m
+Author: Long Phan <gialongphan1@gmail.com>
+Date:   Mon Jun 1 22:42:17 2026 +0700
+
+    Chuyển client thành thư mục code bình thường, xóa bỏ submodule
+
+[33mcommit 70192ca72283979811523fde32b4945671338970[m
+Author: Long Phan <gialongphan1@gmail.com>
+Date:   Mon Jun 1 22:30:17 2026 +0700
+
+    Cập nhật tham chiếu submodule client
+
+[33mcommit a1ad6e6fa0ad4df484829b16cf7ba26312aeaec2[m
+Author: Long Phan <gialongphan1@gmail.com>
+Date:   Sun May 31 04:34:23 2026 +0700
+
+    feat: cập nhật khung server, cấu hình route và hướng dẫn README cho team
+
+[33mcommit 1fd301cbbae9adc8c77b194afe411fc7b0892df9[m
+Author: Long Phan <gialongphan1@gmail.com>
+Date:   Sun May 31 03:39:53 2026 +0700
+
+    feat:hoan thanh auth, diem thuong, tao khung folder client va cap nhat readme o root
+
+[33mcommit 762af44ffb56c8d1e8be4a75b7b5bb589b08cd98[m
+Author: Long Phan <gialongphan1@gmail.com>
+Date:   Sat May 30 17:28:58 2026 +0700
+
+    docs: move readme to root
+
+[33mcommit 8dcb02637c8a776f6874a1f6e99360b61ad5ad85[m
+Author: Long Phan <gialongphan1@gmail.com>
+Date:   Sat May 30 17:27:28 2026 +0700
+
+    docs: add readme
+
+[33mcommit cec84c04186a735ee67f8112ce3c2cbb2f1fdd3e[m
+Author: Long Phan <gialongphan1@gmail.com>
+Date:   Sat May 30 17:21:59 2026 +0700
+
+    feat: init project structure, README and folder setup
+
+[33mcommit ca21a8b2d7966852f606d5d24a11a62280221c05[m
+Author: Long Phan <gialongphan1@gmail.com>
+Date:   Sat May 30 00:12:41 2026 +0700
+
+    tach hieu voi dat ra
+
+[33mcommit 374df22ae0db55113f92b79440a2074ea6160c88[m
+Author: Long Phan <gialongphan1@gmail.com>
+Date:   Fri May 29 23:37:30 2026 +0700
+
+    feat: setup completed boilerplate with isolated models and routes

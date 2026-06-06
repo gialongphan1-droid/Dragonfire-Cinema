@@ -1,0 +1,14 @@
+=============================================
+BÁO CÁO KHÁC BIỆT GIỮA auth VÀ payment
+Ngày tạo: Sat, Jun  6, 2026  1:16:16 PM
+=============================================
+
+=== 1. THỐNG KÊ TỔNG QUAN ===
+
+=== 2. DANH SÁCH FILE ===
+
+=== 3. THỐNG KÊ DÒNG ===
+
+=== 4. FILE MỚI TRONG PAYMENT ===
+
+=== 5. CHI TIẾT THAY ĐỔI ===
