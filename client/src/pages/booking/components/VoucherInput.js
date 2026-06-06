@@ -3,15 +3,7 @@ import axios from "axios";
 
 const API_URL = "http://localhost:5000/api";
 
-const VoucherInput = ({
-	onVoucherApplied,
-	totalAmount,
-	token,
-	ticketTypes,
-	seatTypes,
-	ticketItems,
-	seatItems,
-}) => {
+const VoucherInput = ({ onVoucherApplied, totalAmount, token }) => {
 	const [voucherCode, setVoucherCode] = useState("");
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState("");
@@ -28,6 +20,11 @@ const VoucherInput = ({
 			return;
 		}
 
+		if (totalAmount <= 0) {
+			setError("Không thể áp dụng voucher cho đơn hàng có giá trị 0đ!");
+			return;
+		}
+
 		setLoading(true);
 		setError("");
 
@@ -35,10 +32,6 @@ const VoucherInput = ({
 			const requestData = {
 				code: voucherCode,
 				orderValue: totalAmount,
-				ticketTypes: ticketTypes || [],
-				seatTypes: seatTypes || [],
-				ticketItems: ticketItems || [],
-				seatItems: seatItems || [],
 			};
 
 			console.log("📤 Gửi voucher request:", requestData);
@@ -46,26 +39,39 @@ const VoucherInput = ({
 			const response = await axios.post(
 				`${API_URL}/vouchers/validate`,
 				requestData,
-				{ headers: { Authorization: `Bearer ${token}` } },
+				{ headers: { Authorization: `Bearer ${token}` } }
 			);
 
-			console.log("📥 Voucher response:", response.data);
+			console.log("📥 Voucher response FULL:", response.data);
 
-			if (response.data.success) {
+			if (response.data && response.data.success === true) {
 				const voucherData = {
-					code: response.data.voucher.code,
-					name: response.data.voucher.name,
-					discountAmount: response.data.discountAmount,
-					finalAmount: response.data.finalAmount,
+					code: response.data.code || voucherCode,
+					name: response.data.name || "",
+					discountAmount: response.data.discountAmount || 0,
+					finalAmount: response.data.finalAmount || totalAmount,
 				};
+
+				console.log("✅ Áp dụng thành công:", voucherData);
+
 				setAppliedVoucher(voucherData);
 				onVoucherApplied(voucherData);
 				setVoucherCode("");
 				setError("");
+			} else {
+				const errorMsg = response.data?.message || "Mã voucher không hợp lệ!";
+				console.log("❌ Voucher không hợp lệ:", errorMsg);
+				setError(errorMsg);
+				onVoucherApplied(null);
 			}
 		} catch (error) {
 			console.error("❌ Lỗi voucher:", error);
-			setError(error.response?.data?.message || "Mã voucher không hợp lệ!");
+			console.error("Response error:", error.response?.data);
+
+			const errorMsg = error.response?.data?.message ||
+				error.response?.data?.error ||
+				"Mã voucher không hợp lệ!";
+			setError(errorMsg);
 			onVoucherApplied(null);
 		} finally {
 			setLoading(false);
@@ -77,6 +83,12 @@ const VoucherInput = ({
 		onVoucherApplied(null);
 		setVoucherCode("");
 		setError("");
+	};
+
+	const handleKeyPress = (e) => {
+		if (e.key === "Enter" && !loading && voucherCode.trim()) {
+			handleApplyVoucher();
+		}
 	};
 
 	if (totalAmount === 0) {
@@ -160,7 +172,7 @@ const VoucherInput = ({
 						placeholder="Nhập mã giảm giá (VD: CHUATAYDAU)"
 						value={voucherCode}
 						onChange={(e) => setVoucherCode(e.target.value.toUpperCase())}
-						onKeyPress={(e) => e.key === "Enter" && handleApplyVoucher()}
+						onKeyPress={handleKeyPress}
 						style={{
 							flex: 1,
 							padding: "12px",

@@ -27,6 +27,7 @@ const MyBookings = () => {
 					headers: { Authorization: `Bearer ${token}` },
 				});
 				if (response.data.success) {
+					console.log("📦 Bookings data:", response.data.data);
 					setBookings(response.data.data);
 				}
 			} catch (error) {
@@ -122,10 +123,22 @@ const MyBookings = () => {
 
 				<div className="bookings-list">
 					{bookings.map((booking) => {
-						const movie = booking.showtimeId?.movieId;
+						const showtime = booking.showtimeId;
+						const movie = showtime?.movieId;
 						const posterUrl =
 							movie?.poster ||
 							"https://via.placeholder.com/80x120?text=No+Poster";
+
+						// Lấy thông tin rạp và phòng
+						const theaterName = showtime?.theaterId?.name || 
+										   showtime?.cinemaName || 
+										   showtime?.room?.split(" - ")[0] ||
+										   "Dragonfire Cinema";
+						
+						const roomName = showtime?.roomName || 
+										showtime?.room || 
+										showtime?.roomId?.name ||
+										"Rạp 01";
 
 						return (
 							<div
@@ -155,19 +168,26 @@ const MyBookings = () => {
 										<div className="detail-row">
 											<span className="detail-label">📅 Ngày:</span>
 											<span className="detail-value">
-												{formatDate(booking.showtimeId?.date)}
+												{formatDate(showtime?.date || showtime?.startTime)}
 											</span>
 										</div>
 										<div className="detail-row">
 											<span className="detail-label">⏰ Giờ:</span>
 											<span className="detail-value">
-												{booking.showtimeId?.time || "---"}
+												{showtime?.time || 
+												 (showtime?.startTime ? new Date(showtime.startTime).toLocaleTimeString("vi-VN") : "---")}
 											</span>
 										</div>
 										<div className="detail-row">
 											<span className="detail-label">🏠 Rạp:</span>
 											<span className="detail-value">
-												{booking.showtimeId?.room || "---"}
+												{theaterName}
+											</span>
+										</div>
+										<div className="detail-row">
+											<span className="detail-label">🎭 Phòng:</span>
+											<span className="detail-value">
+												{roomName}
 											</span>
 										</div>
 										<div className="detail-row">
@@ -185,7 +205,7 @@ const MyBookings = () => {
 										<div className="detail-row">
 											<span className="detail-label">🎫 Mã vé:</span>
 											<span className="detail-value ticket-code">
-												{booking.ticketCode}
+												{booking.bookingCode || booking.ticketCode || booking._id?.slice(-8)}
 											</span>
 										</div>
 
@@ -194,7 +214,7 @@ const MyBookings = () => {
 											<div className="detail-row user-info">
 												<span className="detail-label">👤 Người đặt:</span>
 												<span className="detail-value">
-													{booking.userId.name}
+													{booking.userId.name || booking.userId.email}
 												</span>
 											</div>
 										)}

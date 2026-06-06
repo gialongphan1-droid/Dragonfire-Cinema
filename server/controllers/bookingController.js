@@ -2,33 +2,6 @@ const Booking = require("../models/Booking");
 const Showtime = require("../models/Showtime");
 const User = require("../models/User");
 
-// Kiểm tra lần đặt vé đầu tiên
-const isFirstBooking = async (userId) => {
-	const bookingCount = await Booking.countDocuments({
-		userId,
-		status: { $in: ["pending", "completed"] },
-	});
-	return bookingCount === 0;
-};
-
-// Kiểm tra combo cuối tuần (mua 2 tặng 1)
-const checkWeekendCombo = (date, seatCount) => {
-	const dayOfWeek = new Date(date).getDay();
-	const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-	if (isWeekend && seatCount >= 2) {
-		const freeSeats = Math.floor(seatCount / 2);
-		return { isWeekendCombo: true, freeSeats };
-	}
-	return { isWeekendCombo: false, freeSeats: 0 };
-};
-
-// Cập nhật điểm thưởng
-const updateUserPoints = async (userId, totalPrice) => {
-	const pointsEarned = Math.floor(totalPrice / 1000);
-	await User.findByIdAndUpdate(userId, { $inc: { points: pointsEarned } });
-	return pointsEarned;
-};
-
 // Lấy danh sách ghế trống
 const getAvailableSeats = async (req, res) => {
 	try {
@@ -43,7 +16,6 @@ const getAvailableSeats = async (req, res) => {
 				.json({ success: false, message: "Không tìm thấy suất chiếu!" });
 		}
 
-		// Lấy từ showtime.seats
 		const occupiedSeats = showtime.seats
 			.filter((seat) => seat.isBooked === true)
 			.map((seat) => seat.seatNumber);
@@ -66,34 +38,93 @@ const getAvailableSeats = async (req, res) => {
 	}
 };
 
-// Sau khi tạo booking thành công, cập nhật số ghế còn lại
+// Tạo booking mới
 const createBooking = async (req, res) => {
 	try {
-		// ... code tạo booking hiện tại ...
+		const { showtimeId, seats, totalAmount, voucherCode, discountAmount } = req.body;
+		const userId = req.user.id;
 
-		// SAU KHI LƯU BOOKING THÀNH CÔNG, CẬP NHẬT SHOWTIME
-		// Cập nhật số ghế đã đặt cho showtime
+		console.log("📝 Tạo booking:", { showtimeId, seats, totalAmount, userId });
+
+		// Kiểm tra showtime tồn tại
 		const showtime = await Showtime.findById(showtimeId);
-		if (showtime) {
-			// Thêm các ghế đã đặt vào danh sách bookedSeats
-			for (const seat of seats) {
-				if (!showtime.bookedSeats.includes(`${seat.row}${seat.number}`)) {
-					showtime.bookedSeats.push(`${seat.row}${seat.number}`);
-				}
-			}
-			// Cập nhật remainingSeats
-			showtime.remainingSeats =
-				showtime.totalSeats - showtime.bookedSeats.length;
-			await showtime.save();
+		if (!showtime) {
+			return res
+				.status(404)
+				.json({ success: false, message: "Không tìm thấy suất chiếu!" });
 		}
 
-		res.status(201).json(booking);
+		// Kiểm tra ghế còn trống
+		const bookedSeats = [];
+		for (const seat of seats) {
+			const existingSeat = showtime.seats.find(
+				(s) => s.seatNumber === seat && s.isBooked === true
+			);
+			if (existingSeat) {
+				bookedSeats.push(seat);
+			}
+		}
+
+		if (bookedSeats.length > 0) {
+			return res.status(400).json({
+				success: false,
+				message: `Ghế ${bookedSeats.join(", ")} đã được đặt!`,
+			});
+		}
+
+		// Tạo mã vé ngẫu nhiên
+		const ticketCode = `VÉ${Date.now()}${Math.floor(Math.random() * 1000)}`;
+
+		// Tạo booking mới
+		const booking = new Booking({
+			bookingCode: ticketCode,
+			userId: userId,
+			showtimeId: showtimeId,
+			seats: seats,
+			totalAmount: totalAmount,
+			status: "pending",
+			paymentStatus: "unpaid",
+			expiresAt: new Date(Date.now() + 5 * 60 * 1000), // 5 phút
+		});
+
+		await booking.save();
+
+		// Cập nhật ghế đã đặt trong showtime
+		for (const seat of seats) {
+			const seatToBook = showtime.seats.find((s) => s.seatNumber === seat);
+			if (seatToBook) {
+				seatToBook.isBooked = true;
+			}
+		}
+		await showtime.save();
+
+		// Cập nhật điểm thưởng (nếu totalAmount > 0)
+		let pointsEarned = 0;
+		if (totalAmount > 0) {
+			pointsEarned = Math.floor(totalAmount / 1000);
+			await User.findByIdAndUpdate(userId, { $inc: { points: pointsEarned } });
+		}
+
+		console.log("✅ Tạo booking thành công:", booking._id);
+
+		res.status(201).json({
+			success: true,
+			message: "Đặt vé thành công!",
+			data: {
+				bookingId: booking._id,
+				ticketCode: ticketCode,
+				expiresAt: booking.expiresAt,
+				finalAmount: totalAmount,
+				pointsEarned: pointsEarned,
+			},
+		});
 	} catch (error) {
-		// ...
+		console.error("❌ Lỗi tạo booking:", error);
+		res.status(500).json({ success: false, message: error.message });
 	}
 };
 
-// Lấy danh sách booking
+// Lấy danh sách booking của user
 const getMyBookings = async (req, res) => {
 	try {
 		const isAdmin = req.user.role === "admin";
@@ -167,9 +198,39 @@ const cancelBooking = async (req, res) => {
 	}
 };
 
+// Lấy danh sách ghế đã đặt theo showtimeId
+const getOccupiedSeatsByShowtime = async (req, res) => {
+	try {
+		const { showtimeId } = req.params;
+		
+		const showtime = await Showtime.findById(showtimeId);
+		if (!showtime) {
+			return res
+				.status(404)
+				.json({ success: false, message: "Không tìm thấy suất chiếu!" });
+		}
+
+		const occupiedSeats = showtime.seats
+			.filter((seat) => seat.isBooked === true)
+			.map((seat) => seat.seatNumber);
+
+		res.json({
+			success: true,
+			data: {
+				occupiedSeats: occupiedSeats,
+				totalSeats: showtime.seats.length,
+				remainingSeats: showtime.seats.length - occupiedSeats.length,
+			},
+		});
+	} catch (error) {
+		res.status(500).json({ success: false, message: error.message });
+	}
+};
+
 module.exports = {
 	getAvailableSeats,
 	createBooking,
 	getMyBookings,
 	cancelBooking,
+	getOccupiedSeatsByShowtime,
 };

@@ -383,6 +383,33 @@ const Booking = () => {
 		setResetCounter((prev) => prev + 1);
 	};
 
+	// Tạo ticketItems từ ticketInfo để gửi cho voucher
+	const getTicketItems = () => {
+		const items = [];
+		if (ticketInfo.tickets.adult > 0) {
+			items.push({
+				type: "adult",
+				price: 69000,
+				quantity: ticketInfo.tickets.adult
+			});
+		}
+		if (ticketInfo.tickets.student > 0) {
+			items.push({
+				type: "student",
+				price: 49000,
+				quantity: ticketInfo.tickets.student
+			});
+		}
+		if (ticketInfo.tickets.senior > 0) {
+			items.push({
+				type: "senior",
+				price: 50000,
+				quantity: ticketInfo.tickets.senior
+			});
+		}
+		return items;
+	};
+
 	if (loading) {
 		return (
 			<div className="loading text-center mt-5">Đang tải thông tin...</div>
@@ -463,9 +490,9 @@ const Booking = () => {
 					token={token}
 					ticketTypes={[]}
 					seatTypes={selectedSeats.map((s) =>
-						s.type === "vip" ? "vip" : "normal",
+						s.type === "vip" ? "vip" : "normal"
 					)}
-					ticketItems={[]}
+					ticketItems={getTicketItems()}
 					seatItems={selectedSeats.map((s) => ({
 						type: s.type === "vip" ? "vip" : "normal",
 						price: s.type === "vip" ? 120000 : selectedTicketPrice,
@@ -477,10 +504,7 @@ const Booking = () => {
 			<BookingSummary
 				selectedSeats={selectedSeats}
 				ticketInfo={ticketInfo}
-				totalPrice={totalPrice}
-				finalPrice={finalPrice}
-				voucherDiscount={voucherDiscount}
-				appliedVoucher={appliedVoucher}
+				totalPrice={finalPrice || totalPrice}
 				onConfirm={handleConfirmBooking}
 				onCancel={handleCancel}
 				loading={submitting}

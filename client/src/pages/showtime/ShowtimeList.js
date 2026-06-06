@@ -1,6 +1,6 @@
-import axios from "axios";
-import { useCallback, useEffect, useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const API_URL = "http://localhost:5000/api";
 
@@ -110,121 +110,13 @@ const ShowtimeList = () => {
 		}
 	};
 
-	// Lấy số ghế còn lại mới nhất cho 1 suất chiếu
-	const fetchRemainingSeats = useCallback(async (showtimeId) => {
-		try {
-			const response = await axios.get(
-				`${API_URL}/showtimes/${showtimeId}/remaining-seats`,
-			);
-			if (response.data.success) {
-				return response.data;
-			}
-			return null;
-		} catch (error) {
-			console.error("Lỗi lấy số ghế:", error);
-			return null;
-		}
-	}, []);
-
-	// Cập nhật tất cả số ghế còn lại
-	const updateAllRemainingSeats = useCallback(async () => {
-		if (!Array.isArray(showtimes) || showtimes.length === 0) return;
-
-		const updatedShowtimes = [...showtimes];
-		let hasChanges = false;
-
-		for (let i = 0; i < updatedShowtimes.length; i++) {
-			const st = updatedShowtimes[i];
-			const seatData = await fetchRemainingSeats(st._id);
-			if (seatData && seatData.remainingSeats !== st.remainingSeats) {
-				updatedShowtimes[i].remainingSeats = seatData.remainingSeats;
-				updatedShowtimes[i].bookedSeats = seatData.bookedSeats || [];
-				hasChanges = true;
-			}
-		}
-
-		if (hasChanges) {
-			setShowtimes(updatedShowtimes);
-		}
-	}, [showtimes, fetchRemainingSeats]);
-
-	// Lắng nghe sự kiện đặt vé thành công
-	useEffect(() => {
-		// Lắng nghe sự kiện từ localStorage (khi đặt vé xong)
-		const handleStorageChange = (e) => {
-			if (e.key === "bookingSuccess") {
-				setRefreshKey((prev) => prev + 1);
-				localStorage.removeItem("bookingSuccess");
-			}
-		};
-
-		// Lắng nghe sự kiện từ postMessage (nếu dùng popup)
-		const handleMessage = (event) => {
-			if (event.data === "bookingSuccess") {
-				setRefreshKey((prev) => prev + 1);
-			}
-		};
-
-		window.addEventListener("storage", handleStorageChange);
-		window.addEventListener("message", handleMessage);
-
-		return () => {
-			window.removeEventListener("storage", handleStorageChange);
-			window.removeEventListener("message", handleMessage);
-		};
-	}, []);
-
-	// Refresh khi có sự kiện hoặc focus lại tab
-	useEffect(() => {
-		const handleVisibilityChange = () => {
-			if (!document.hidden) {
-				updateAllRemainingSeats();
-			}
-		};
-
-		document.addEventListener("visibilitychange", handleVisibilityChange);
-
-		// Refresh định kỳ mỗi 30 giây
-		const interval = setInterval(() => {
-			updateAllRemainingSeats();
-		}, 30000);
-
-		return () => {
-			document.removeEventListener("visibilitychange", handleVisibilityChange);
-			clearInterval(interval);
-		};
-	}, [updateAllRemainingSeats]);
-
-	// Khởi tạo dữ liệu
-	useEffect(() => {
-		fetchServerTime();
-	}, []);
-
-	useEffect(() => {
-		if (serverTime) {
-			fetchShowtimes();
-			fetchMovies();
-		}
-	}, [serverTime, fetchShowtimes]);
-
-	// Refresh khi có sự kiện đặt vé
-	useEffect(() => {
-		if (refreshKey > 0) {
-			updateAllRemainingSeats();
-		}
-	}, [refreshKey, updateAllRemainingSeats]);
-
 	// Lọc suất chiếu
-	useEffect(() => {
-		filterShowtimes();
-	}, [selectedMovie, selectedDate, showtimes]);
-
 	const filterShowtimes = () => {
 		if (!Array.isArray(showtimes)) {
 			setFilteredShowtimes([]);
 			return;
 		}
-
+		
 		let filtered = [...showtimes];
 		if (selectedMovie) {
 			filtered = filtered.filter((st) => st.movieId?._id === selectedMovie);
@@ -282,7 +174,7 @@ const ShowtimeList = () => {
 
 	const groupShowtimesByMovie = () => {
 		if (!Array.isArray(filteredShowtimes)) return {};
-
+		
 		const grouped = {};
 		filteredShowtimes.forEach((showtime) => {
 			const movieId = showtime.movieId?._id;
@@ -316,14 +208,25 @@ const ShowtimeList = () => {
 	};
 
 	const groupedShowtimes = groupShowtimesByMovie();
-	const today = serverTime
-		? new Date(serverTime).toISOString().split("T")[0]
-		: "";
+	const today = serverTime ? new Date(serverTime).toISOString().split("T")[0] : "";
+
+	useEffect(() => {
+		fetchServerTime();
+	}, []);
+
+	useEffect(() => {
+		if (serverTime) {
+			fetchShowtimes();
+			fetchMovies();
+		}
+	}, [serverTime, fetchShowtimes]);
+
+	useEffect(() => {
+		filterShowtimes();
+	}, [selectedMovie, selectedDate, showtimes]);
 
 	if (loading || !serverTime) {
-		return (
-			<div className="loading text-center mt-5">Đang tải suất chiếu...</div>
-		);
+		return <div className="loading text-center mt-5">Đang tải suất chiếu...</div>;
 	}
 
 	return (
@@ -340,12 +243,9 @@ const ShowtimeList = () => {
 							className="filter-select"
 						>
 							<option value="">Tất cả phim</option>
-							{Array.isArray(movies) &&
-								movies.map((movie) => (
-									<option key={movie._id} value={movie._id}>
-										{movie.title}
-									</option>
-								))}
+							{Array.isArray(movies) && movies.map((movie) => (
+								<option key={movie._id} value={movie._id}>{movie.title}</option>
+							))}
 						</select>
 					</div>
 
@@ -370,9 +270,7 @@ const ShowtimeList = () => {
 				{Object.keys(groupedShowtimes).length === 0 ? (
 					<div className="no-results-home">
 						<p>Không tìm thấy suất chiếu nào!</p>
-						<p className="no-results-suggestion">
-							Hãy thử chọn phim hoặc ngày khác nhé!
-						</p>
+						<p className="no-results-suggestion">Hãy thử chọn phim hoặc ngày khác nhé!</p>
 					</div>
 				) : (
 					<div className="showtimes-list">
@@ -385,31 +283,17 @@ const ShowtimeList = () => {
 								<div key={movieId} className="movie-showtime-group">
 									<div className="movie-group-header">
 										<img
-											src={
-												movie?.poster ||
-												"https://via.placeholder.com/80x120?text=No+Poster"
-											}
+											src={movie?.poster || "https://via.placeholder.com/80x120?text=No+Poster"}
 											alt={movie?.title}
 											className="movie-group-poster"
-											onError={(e) => {
-												e.target.src =
-													"https://via.placeholder.com/80x120?text=No+Poster";
-											}}
+											onError={(e) => { e.target.src = "https://via.placeholder.com/80x120?text=No+Poster"; }}
 										/>
 										<div className="movie-group-info">
-											<h2 className="movie-group-title">
-												{movie?.title || "Không xác định"}
-											</h2>
+											<h2 className="movie-group-title">{movie?.title || "Không xác định"}</h2>
 											<div className="movie-group-meta">
-												<span>
-													Đánh giá: {movie?.rating || "Chưa đánh giá"}
-												</span>
+												<span>Đánh giá: {movie?.rating || "Chưa đánh giá"}</span>
 												<span>Thời lượng: {movie?.duration || 0} phút</span>
-												<span>
-													Thể loại:{" "}
-													{movie?.genre?.slice(0, 2).join(", ") ||
-														"Chưa cập nhật"}
-												</span>
+												<span>Thể loại: {movie?.genre?.slice(0, 2).join(", ") || "Chưa cập nhật"}</span>
 											</div>
 										</div>
 									</div>
@@ -425,38 +309,17 @@ const ShowtimeList = () => {
 														if (showtime.isValid) {
 															navigate(`/booking?showtime=${showtime.id}`);
 														} else {
-															alert(
-																"Suất chiếu này đã quá thời gian! Không thể đặt vé.",
-															);
+															alert("Suất chiếu này đã quá thời gian! Không thể đặt vé.");
 														}
 													}}
-													style={
-														!showtime.isValid
-															? { opacity: 0.6, cursor: "not-allowed" }
-															: {}
-													}
+													style={!showtime.isValid ? { opacity: 0.6, cursor: "not-allowed" } : {}}
 												>
-													<div className="showtime-group-time">
-														{showtime.time}
-													</div>
-													<div className="showtime-group-date">
-														{showtime.date}
-													</div>
-													<div className="showtime-group-room">
-														{showtime.room}
-													</div>
-													<div className="showtime-group-price">
-														{showtime.price?.toLocaleString()}đ
-													</div>
-													<div
-														className={`showtime-group-seats ${showtime.remainingSeats <= 10 ? "seats-low" : ""}`}
-													>
-														Còn {showtime.remainingSeats}/{showtime.totalSeats}{" "}
-														ghế
-													</div>
-													{!showtime.isValid && (
-														<div className="expired-badge">Hết hạn</div>
-													)}
+													<div className="showtime-group-time">{showtime.time}</div>
+													<div className="showtime-group-date">{showtime.date}</div>
+													<div className="showtime-group-room">{showtime.room}</div>
+													<div className="showtime-group-price">{showtime.price?.toLocaleString()}đ</div>
+													{/* Đã xóa hiển thị số ghế */}
+													{!showtime.isValid && <div className="expired-badge">Hết hạn</div>}
 												</div>
 											))}
 										</div>

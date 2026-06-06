@@ -4,7 +4,7 @@ import PrivateRoute from "./components/PrivateRoute";
 import Footer from "./pages/Footer";
 import Header from "./pages/Header";
 import Home from "./pages/Home";
-import VoucherAdmin from "./pages/admin/VoucherAdmin"; // ✅ ĐÚNG
+import VoucherAdmin from "./pages/voucher/VoucherAdmin";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import ResetPassword from "./pages/auth/ResetPassword";
@@ -15,7 +15,7 @@ import MyBookings from "./pages/booking/MyBookings";
 import MovieAdmin from "./pages/movie/MovieAdmin";
 import MovieDetail from "./pages/movie/MovieDetail";
 import MovieList from "./pages/movie/MovieList";
-import Payment from "./pages/payment/Payment";
+import Payment from "./pages/Payment/Payment";
 import Devices from "./pages/profile/Devices";
 import Profile from "./pages/profile/Profile";
 import LichChieu from "./pages/showtime/LichChieu";

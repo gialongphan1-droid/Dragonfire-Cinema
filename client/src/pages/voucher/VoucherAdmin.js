@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 
 const API_URL = "http://localhost:5000/api";
@@ -28,11 +28,8 @@ const VoucherAdmin = () => {
 	const token = localStorage.getItem("accessToken");
 	const today = new Date().toISOString().split("T")[0];
 
-	useEffect(() => {
-		fetchVouchers();
-	}, []);
-
-	const fetchVouchers = async () => {
+	// Sử dụng useCallback để tránh re-render không cần thiết
+	const fetchVouchers = useCallback(async () => {
 		try {
 			const response = await axios.get(`${API_URL}/vouchers`, {
 				headers: { Authorization: `Bearer ${token}` },
@@ -45,7 +42,11 @@ const VoucherAdmin = () => {
 		} finally {
 			setLoading(false);
 		}
-	};
+	}, [token]);
+
+	useEffect(() => {
+		fetchVouchers();
+	}, [fetchVouchers]);
 
 	const getApplicableText = (voucher) => {
 		if (voucher.applicableTo === "total") return "Tổng hóa đơn";
@@ -93,7 +94,7 @@ const VoucherAdmin = () => {
 
 	const clearFieldError = (fieldName) => {
 		if (errors[fieldName]) {
-			setErrors({ ...errors, [fieldName]: "" });
+			setErrors((prev) => ({ ...prev, [fieldName]: "" }));
 		}
 	};
 

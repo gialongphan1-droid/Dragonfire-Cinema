@@ -1,5 +1,11 @@
-========== client/src/pages/voucher/VoucherAdmin.js ==========
-import React, { useState, useEffect } from "react";
+================================================================================
+DANH SÁCH CÁC FILE VOUCHER
+================================================================================
+
+================================================================================
+FILE: VoucherAdmin.js (client/src/pages/voucher)
+================================================================================
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 
 const API_URL = "http://localhost:5000/api";
@@ -29,11 +35,8 @@ const VoucherAdmin = () => {
 	const token = localStorage.getItem("accessToken");
 	const today = new Date().toISOString().split("T")[0];
 
-	useEffect(() => {
-		fetchVouchers();
-	}, []);
-
-	const fetchVouchers = async () => {
+	// Sử dụng useCallback để tránh re-render không cần thiết
+	const fetchVouchers = useCallback(async () => {
 		try {
 			const response = await axios.get(`${API_URL}/vouchers`, {
 				headers: { Authorization: `Bearer ${token}` },
@@ -46,7 +49,11 @@ const VoucherAdmin = () => {
 		} finally {
 			setLoading(false);
 		}
-	};
+	}, [token]);
+
+	useEffect(() => {
+		fetchVouchers();
+	}, [fetchVouchers]);
 
 	const getApplicableText = (voucher) => {
 		if (voucher.applicableTo === "total") return "Tổng hóa đơn";
@@ -94,7 +101,7 @@ const VoucherAdmin = () => {
 
 	const clearFieldError = (fieldName) => {
 		if (errors[fieldName]) {
-			setErrors({ ...errors, [fieldName]: "" });
+			setErrors((prev) => ({ ...prev, [fieldName]: "" }));
 		}
 	};
 
@@ -587,8 +594,9 @@ const VoucherAdmin = () => {
 };
 
 export default VoucherAdmin;
-
-========== client/src/pages/booking/components/VoucherInput.js ==========
+================================================================================
+FILE: VoucherInput.js (client/src/pages/booking/components)
+================================================================================
 import React, { useState } from "react";
 import axios from "axios";
 
@@ -611,6 +619,11 @@ const VoucherInput = ({ onVoucherApplied, totalAmount, token }) => {
 			return;
 		}
 
+		if (totalAmount <= 0) {
+			setError("Không thể áp dụng voucher cho đơn hàng có giá trị 0đ!");
+			return;
+		}
+
 		setLoading(true);
 		setError("");
 
@@ -618,25 +631,43 @@ const VoucherInput = ({ onVoucherApplied, totalAmount, token }) => {
 			const requestData = {
 				code: voucherCode,
 				orderValue: totalAmount,
+				ticketTypes: [],
+				seatTypes: [],
+				ticketItems: [],
+				seatItems: [],
 			};
+
+			console.log("📤 Gửi voucher request:", requestData);
 
 			const response = await axios.post(
 				`${API_URL}/vouchers/validate`,
 				requestData,
-				{ headers: { Authorization: `Bearer ${token}` } },
+				{ headers: { Authorization: `Bearer ${token}` } }
 			);
 
+			console.log("📥 Voucher response:", response.data);
+
 			if (response.data.success) {
+				// ✅ Lấy dữ liệu linh hoạt (có thể có .voucher hoặc không)
+				const voucherInfo = response.data.voucher || response.data;
+				
 				const voucherData = {
-					code: response.data.voucher.code,
-					discountAmount: response.data.discountAmount,
-					finalAmount: response.data.finalAmount,
+					code: voucherInfo.code || voucherCode,
+					name: voucherInfo.name || "",
+					discountAmount: response.data.discountAmount || 0,
+					finalAmount: response.data.finalAmount || totalAmount,
 				};
+				
 				setAppliedVoucher(voucherData);
 				onVoucherApplied(voucherData);
 				setVoucherCode("");
+				setError("");
+			} else {
+				setError(response.data.message || "Mã voucher không hợp lệ!");
+				onVoucherApplied(null);
 			}
 		} catch (error) {
+			console.error("❌ Lỗi voucher:", error);
 			setError(error.response?.data?.message || "Mã voucher không hợp lệ!");
 			onVoucherApplied(null);
 		} finally {
@@ -649,6 +680,12 @@ const VoucherInput = ({ onVoucherApplied, totalAmount, token }) => {
 		onVoucherApplied(null);
 		setVoucherCode("");
 		setError("");
+	};
+
+	const handleKeyPress = (e) => {
+		if (e.key === "Enter" && !loading && voucherCode.trim()) {
+			handleApplyVoucher();
+		}
 	};
 
 	if (totalAmount === 0) {
@@ -700,6 +737,16 @@ const VoucherInput = ({ onVoucherApplied, totalAmount, token }) => {
 						>
 							Giảm {appliedVoucher.discountAmount.toLocaleString()}đ
 						</span>
+						<span
+							style={{
+								display: "block",
+								fontSize: "11px",
+								color: "#2e7d32",
+								marginTop: "2px",
+							}}
+						>
+							Thành tiền: {appliedVoucher.finalAmount.toLocaleString()}đ
+						</span>
 					</div>
 					<button
 						onClick={handleRemoveVoucher}
@@ -719,10 +766,10 @@ const VoucherInput = ({ onVoucherApplied, totalAmount, token }) => {
 				<div style={{ display: "flex", gap: "10px" }}>
 					<input
 						type="text"
-						placeholder="Nhập mã giảm giá (VD: CHUATAYDAU)"
+						placeholder="Nhập mã giảm giá (VD: GIAM10)"
 						value={voucherCode}
 						onChange={(e) => setVoucherCode(e.target.value.toUpperCase())}
-						onKeyPress={(e) => e.key === "Enter" && handleApplyVoucher()}
+						onKeyPress={handleKeyPress}
 						style={{
 							flex: 1,
 							padding: "12px",
@@ -750,7 +797,7 @@ const VoucherInput = ({ onVoucherApplied, totalAmount, token }) => {
 					</button>
 				</div>
 			)}
-			
+
 			{error && (
 				<div
 					style={{
@@ -770,91 +817,9 @@ const VoucherInput = ({ onVoucherApplied, totalAmount, token }) => {
 };
 
 export default VoucherInput;
-========== server/models/Voucher.js ==========
-const mongoose = require("mongoose");
-
-const VoucherSchema = new mongoose.Schema({
-	code: {
-		type: String,
-		required: [true, "Vui lòng nhập mã voucher"],
-		unique: true,
-		uppercase: true,
-		trim: true,
-	},
-	name: {
-		type: String,
-		required: [true, "Vui lòng nhập tên voucher"],
-	},
-	description: {
-		type: String,
-		default: "",
-	},
-	discountType: {
-		type: String,
-		enum: ["percent", "fixed", "final_price"],
-		required: true,
-	},
-	discountValue: {
-		type: Number,
-		required: true,
-	},
-	// 🔥 QUAN TRỌNG: Đối tượng áp dụng (vé hoặc ghế)
-	applicableTo: {
-		type: String,
-		enum: ["ticket", "seat", "total"],
-		default: "total",
-		required: true,
-	},
-	// Loại vé được áp dụng (nếu applicableTo = "ticket")
-	applicableTicketTypes: {
-		type: [String],
-		enum: ["adult", "student", "senior", "all"],
-		default: ["all"],
-	},
-	// Loại ghế được áp dụng (nếu applicableTo = "seat")
-	applicableSeatTypes: {
-		type: [String],
-		enum: ["normal", "vip", "couple", "all"],
-		default: ["all"],
-	},
-	minOrderValue: {
-		type: Number,
-		default: 0,
-	},
-	maxDiscount: {
-		type: Number,
-		default: 0,
-	},
-	quantity: {
-		type: Number,
-		default: 0,
-	},
-	usedCount: {
-		type: Number,
-		default: 0,
-	},
-	startDate: {
-		type: Date,
-		required: true,
-	},
-	endDate: {
-		type: Date,
-		required: true,
-	},
-	status: {
-		type: String,
-		enum: ["active", "inactive", "expired"],
-		default: "active",
-	},
-	createdAt: {
-		type: Date,
-		default: Date.now,
-	},
-});
-
-module.exports = mongoose.model("Voucher", VoucherSchema);
-
-========== server/routes/voucherRoutes.js ==========
+================================================================================
+FILE: voucherRoutes.js (server/routes)
+================================================================================
 const express = require("express");
 const router = express.Router();
 const {
@@ -877,7 +842,9 @@ router.delete("/:id", verifyToken, deleteVoucher);
 
 module.exports = router;
 
-========== server/controllers/voucherController.js ==========
+================================================================================
+FILE: voucherController.js (server/controllers)
+================================================================================
 const Voucher = require("../models/Voucher");
 
 const getVouchers = async (req, res) => {
@@ -1176,4 +1143,90 @@ module.exports = {
 	deleteVoucher,
 	validateVoucher,
 };
+
+================================================================================
+FILE: Voucher.js (server/models)
+================================================================================
+const mongoose = require("mongoose");
+
+const VoucherSchema = new mongoose.Schema({
+	code: {
+		type: String,
+		required: [true, "Vui lòng nhập mã voucher"],
+		unique: true,
+		uppercase: true,
+		trim: true,
+	},
+	name: {
+		type: String,
+		required: [true, "Vui lòng nhập tên voucher"],
+	},
+	description: {
+		type: String,
+		default: "",
+	},
+	discountType: {
+		type: String,
+		enum: ["percent", "fixed", "final_price"],
+		required: true,
+	},
+	discountValue: {
+		type: Number,
+		required: true,
+	},
+	// 🔥 QUAN TRỌNG: Đối tượng áp dụng (vé hoặc ghế)
+	applicableTo: {
+		type: String,
+		enum: ["ticket", "seat", "total"],
+		default: "total",
+		required: true,
+	},
+	// Loại vé được áp dụng (nếu applicableTo = "ticket")
+	applicableTicketTypes: {
+		type: [String],
+		enum: ["adult", "student", "senior", "all"],
+		default: ["all"],
+	},
+	// Loại ghế được áp dụng (nếu applicableTo = "seat")
+	applicableSeatTypes: {
+		type: [String],
+		enum: ["normal", "vip", "couple", "all"],
+		default: ["all"],
+	},
+	minOrderValue: {
+		type: Number,
+		default: 0,
+	},
+	maxDiscount: {
+		type: Number,
+		default: 0,
+	},
+	quantity: {
+		type: Number,
+		default: 0,
+	},
+	usedCount: {
+		type: Number,
+		default: 0,
+	},
+	startDate: {
+		type: Date,
+		required: true,
+	},
+	endDate: {
+		type: Date,
+		required: true,
+	},
+	status: {
+		type: String,
+		enum: ["active", "inactive", "expired"],
+		default: "active",
+	},
+	createdAt: {
+		type: Date,
+		default: Date.now,
+	},
+});
+
+module.exports = mongoose.model("Voucher", VoucherSchema);
 
