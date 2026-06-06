@@ -1,30 +1,30 @@
-import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Header from "./pages/Header";
+import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
+import "./App.css";
+import PrivateRoute from "./components/PrivateRoute";
 import Footer from "./pages/Footer";
+import Header from "./pages/Header";
 import Home from "./pages/Home";
+import VoucherAdmin from "./pages/admin/VoucherAdmin"; // ✅ ĐÚNG
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
+import ResetPassword from "./pages/auth/ResetPassword";
 import VerifyEmail from "./pages/auth/VerifyEmail"; // ✅ THÊM IMPORT
-import MovieList from "./pages/movie/MovieList";
-import MovieDetail from "./pages/movie/MovieDetail";
-import MovieAdmin from "./pages/movie/MovieAdmin";
-import PrivateRoute from "./components/PrivateRoute";
-import ShowtimeAdmin from "./pages/showtime/ShowtimeAdmin";
-import ShowtimeList from "./pages/showtime/ShowtimeList";
+import VerifyEmailChange from "./pages/auth/VerifyEmailChange";
 import Booking from "./pages/booking/Booking";
 import MyBookings from "./pages/booking/MyBookings";
-import LichChieu from "./pages/showtime/LichChieu";
-import RoomList from "./pages/showtime/RoomList";
-import RoomForm from "./pages/showtime/RoomForm";
-import ShowTimeDetails from "./pages/showtime/ShowTimeDetails";
-import ShowTimeForm from "./pages/showtime/ShowTimeForm";
+import MovieAdmin from "./pages/movie/MovieAdmin";
+import MovieDetail from "./pages/movie/MovieDetail";
+import MovieList from "./pages/movie/MovieList";
 import Payment from "./pages/payment/Payment";
 import Devices from "./pages/profile/Devices";
-import ResetPassword from "./pages/auth/ResetPassword";
 import Profile from "./pages/profile/Profile";
-import VerifyEmailChange from "./pages/auth/VerifyEmailChange";
-import "./App.css";
+import LichChieu from "./pages/showtime/LichChieu";
+import RoomForm from "./pages/showtime/RoomForm";
+import RoomList from "./pages/showtime/RoomList";
+import ShowTimeDetails from "./pages/showtime/ShowTimeDetails";
+import ShowTimeForm from "./pages/showtime/ShowTimeForm";
+import ShowtimeAdmin from "./pages/showtime/ShowtimeAdmin";
+import ShowtimeList from "./pages/showtime/ShowtimeList";
 
 function App() {
 	return (
@@ -53,6 +53,14 @@ function App() {
 					<Route path="/lich-chieu" element={<LichChieu />} />
 					<Route path="/showtimes/:id" element={<ShowTimeDetails />} />
 					<Route path="/rooms" element={<RoomList />} />
+					<Route
+						path="/admin/vouchers"
+						element={
+							<PrivateRoute adminOnly={true}>
+								<VoucherAdmin />
+							</PrivateRoute>
+						}
+					/>
 					<Route
 						path="/devices"
 						element={

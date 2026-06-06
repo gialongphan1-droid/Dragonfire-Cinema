@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import authService from "../services/authService";
 
@@ -34,7 +34,7 @@ const Header = () => {
 	useEffect(() => {
 		fetchUser();
 
-		// ✅ LẮNG NGHE SỰ KIỆN CẬP NHẬT USER
+		// Lắng nghe sự kiện cập nhật user
 		const handleUserUpdate = () => {
 			console.log("🔄 User updated, refreshing header...");
 			fetchUser();
@@ -92,9 +92,6 @@ const Header = () => {
 				<Link to="/showtimes" className="nav-link">
 					Suất chiếu
 				</Link>
-				<Link to="/products" className="nav-link">
-					Combo
-				</Link>
 
 				{/* Quản lý - Chỉ Admin */}
 				{token && isAdmin && (
@@ -125,12 +122,6 @@ const Header = () => {
 								>
 									🎫 Quản lý Voucher
 								</Link>
-								<Link
-									to="/admin/products"
-									onClick={() => setIsAdminMenuOpen(false)}
-								>
-									🍿 Quản lý combo
-								</Link>
 							</div>
 						)}
 					</div>
@@ -143,7 +134,7 @@ const Header = () => {
 					</Link>
 				)}
 
-				{/* 📱 Thiết bị */}
+				{/* Thiết bị */}
 				{token && (
 					<Link to="/devices" className="nav-link">
 						📱 Thiết bị

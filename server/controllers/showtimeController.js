@@ -3,6 +3,41 @@ const Movie = require("../models/Movie");
 const Room = require("../models/Room");
 const Booking = require("../models/Booking");
 
+// @desc    Get remaining seats for a showtime (realtime)
+// @route   GET /api/showtimes/:id/remaining-seats
+// @access  Public
+const getRemainingSeats = async (req, res) => {
+	try {
+		const showtime = await Showtime.findById(req.params.id);
+
+		if (!showtime) {
+			return res.status(404).json({
+				success: false,
+				message: "Không tìm thấy suất chiếu",
+			});
+		}
+
+		// Tính toán số ghế còn lại
+		const totalSeats = showtime.seats?.length || showtime.availableSeats || 100;
+		const bookedCount = showtime.bookedSeats?.length || 0;
+		const remainingSeats = totalSeats - bookedCount;
+
+		res.json({
+			success: true,
+			remainingSeats: remainingSeats,
+			totalSeats: totalSeats,
+			bookedSeats: showtime.bookedSeats || [],
+			lockedSeats: showtime.lockedSeats || [],
+		});
+	} catch (error) {
+		console.error("Lỗi lấy số ghế còn lại:", error);
+		res.status(500).json({
+			success: false,
+			message: error.message,
+		});
+	}
+};
+
 const getAvailableSeatsCount = async (showtimeId) => {
 	const showtime = await Showtime.findById(showtimeId).select("seats");
 	if (!showtime) return 0;
@@ -384,4 +419,5 @@ module.exports = {
 	lockSeats,
 	unlockSeats,
 	getSeatsStatus,
+	getRemainingSeats,
 };

@@ -43,8 +43,6 @@ const Home = () => {
 	const goToPage = (page) => {
 		if (page >= 1 && page <= pagination.totalPages) {
 			setPagination((prev) => ({ ...prev, currentPage: page }));
-			// ✅ XÓA DÒNG NÀY - không cuộn lên đầu
-			// window.scrollTo({ top: 0, behavior: "smooth" });
 		}
 	};
 
@@ -60,16 +58,13 @@ const Home = () => {
 		}
 	};
 
-	// Thêm useEffect để lưu và khôi phục vị trí cuộn
 	const scrollPositionRef = React.useRef(0);
 
 	useEffect(() => {
-		// Lưu vị trí trước khi fetch dữ liệu mới
 		scrollPositionRef.current = window.scrollY;
 	}, [pagination.currentPage]);
 
 	useEffect(() => {
-		// Khôi phục vị trí sau khi fetch xong
 		if (!loading && scrollPositionRef.current > 0) {
 			window.scrollTo(0, scrollPositionRef.current);
 		}
@@ -215,62 +210,6 @@ const Home = () => {
 									onClick={() => navigate("/login")}
 								>
 									Xem chi tiết →
-								</button>
-							</div>
-							<div className="promotion-card">
-								<div className="promotion-icon">🎫</div>
-								<h3>COMBO CUỐI TUẦN</h3>
-								<p>
-									Mua 2 vé tặng 1 vé, áp dụng cho tất cả suất chiếu thứ 7, Chủ
-									nhật
-								</p>
-								<button
-									className="promotion-link"
-									onClick={() => navigate("/showtimes")}
-								>
-									Đặt vé ngay →
-								</button>
-							</div>
-						</div>
-					</div>
-				</section>
-
-				{/* Dịch vụ tiện ích */}
-				<section className="services-section">
-					<div className="section-container">
-						<h2 className="section-title">DỊCH VỤ TIỆN ÍCH</h2>
-						<div className="services-grid">
-							<div className="service-card">
-								<div className="service-icon">🍿</div>
-								<h3>BẮP NƯỚC</h3>
-								<p>Đa dạng combo, giá tốt, giao tận ghế</p>
-								<button
-									className="service-link"
-									onClick={() => navigate("/products")}
-								>
-									Đặt ngay →
-								</button>
-							</div>
-							<div className="service-card">
-								<div className="service-icon">🎂</div>
-								<h3>TIỆC SINH NHẬT</h3>
-								<p>Tổ chức sinh nhật tại rạp với ưu đãi đặc biệt</p>
-								<button
-									className="service-link"
-									onClick={() => navigate("/contact")}
-								>
-									Liên hệ →
-								</button>
-							</div>
-							<div className="service-card">
-								<div className="service-icon">🚗</div>
-								<h3>BÃI ĐỖ XE</h3>
-								<p>Miễn phí đỗ xe cho tất cả khách hàng</p>
-								<button
-									className="service-link"
-									onClick={() => navigate("/location")}
-								>
-									Xem bản đồ →
 								</button>
 							</div>
 						</div>

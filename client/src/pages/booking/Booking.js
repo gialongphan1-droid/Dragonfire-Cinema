@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
 import axios from "axios";
-import TicketTypeSelector from "./components/TicketTypeSelector";
-import SeatMap from "./components/SeatMap";
+import { useCallback, useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import BookingSummary from "./components/BookingSummary";
+import SeatMap from "./components/SeatMap";
+import TicketTypeSelector from "./components/TicketTypeSelector";
 import VoucherInput from "./components/VoucherInput";
 
 const API_URL = "http://localhost:5000/api";
@@ -21,7 +21,7 @@ const Booking = () => {
 		totalTicketPrice: 0,
 		totalSeats: 0,
 	});
-	const [selectedTicketPrice, setSelectedTicketPrice] = useState(0);
+	const [selectedTicketPrice, setSelectedTicketPrice] = useState(69000);
 	const [totalPrice, setTotalPrice] = useState(0);
 	const [loading, setLoading] = useState(true);
 	const [submitting, setSubmitting] = useState(false);
@@ -75,7 +75,6 @@ const Booking = () => {
 	const startTimer = useCallback(
 		(expiresAt, bookingId) => {
 			if (isAdmin) return;
-			console.log("⏰ BẮT ĐẦU TIMER, expiresAt:", expiresAt);
 			stopTimer();
 			const expireDate = new Date(expiresAt);
 			const interval = setInterval(() => {
@@ -121,10 +120,6 @@ const Booking = () => {
 					headers: { Authorization: `Bearer ${token}` },
 				});
 				if (res.data.success) {
-					console.log(
-						"🔄 Cập nhật occupiedSeats từ polling:",
-						res.data.data.occupiedSeats,
-					);
 					setOccupiedSeats(res.data.data.occupiedSeats || []);
 				}
 			} catch (error) {
@@ -152,12 +147,24 @@ const Booking = () => {
 		const fetchData = async () => {
 			setLoading(true);
 			try {
-				const showtimeRes = await axios.get(`${API_URL}/showtimes`);
-				const found = showtimeRes.data.success
-					? showtimeRes.data.data.find((st) => st._id === showtimeId)
-					: null;
-				if (!found) throw new Error("Không tìm thấy suất chiếu");
-				setShowtime(found);
+				const showtimeRes = await axios.get(
+					`${API_URL}/showtimes/${showtimeId}`,
+				);
+				if (showtimeRes.data.success) {
+					setShowtime(showtimeRes.data.data);
+				} else {
+					const allShowtimesRes = await axios.get(`${API_URL}/showtimes`);
+					if (allShowtimesRes.data.success) {
+						const found = allShowtimesRes.data.data.find(
+							(st) => st._id === showtimeId,
+						);
+						if (found) {
+							setShowtime(found);
+						} else {
+							throw new Error("Không tìm thấy suất chiếu");
+						}
+					}
+				}
 
 				const seatsRes = await axios.get(
 					`${API_URL}/bookings/seats/${showtimeId}`,
@@ -166,14 +173,11 @@ const Booking = () => {
 					},
 				);
 				if (seatsRes.data.success) {
-					console.log(
-						"🎯 occupiedSeats từ API ban đầu:",
-						seatsRes.data.data.occupiedSeats,
-					);
 					setOccupiedSeats(seatsRes.data.data.occupiedSeats || []);
 				}
 			} catch (error) {
-				alert("Lỗi tải dữ liệu!");
+				console.error("Lỗi tải dữ liệu:", error);
+				alert("Lỗi tải dữ liệu! Vui lòng thử lại.");
 				navigate("/showtimes");
 			} finally {
 				setLoading(false);
@@ -182,12 +186,13 @@ const Booking = () => {
 		fetchData();
 	}, [showtimeId, token, navigate]);
 
+	// Tính tổng tiền vé
 	useEffect(() => {
-		const total = selectedSeats.reduce((sum, seat) => {
+		const ticketTotal = selectedSeats.reduce((sum, seat) => {
 			const seatPrice = seat.type === "vip" ? 120000 : selectedTicketPrice;
 			return sum + seatPrice;
 		}, 0);
-		setTotalPrice(total);
+		setTotalPrice(ticketTotal);
 	}, [selectedSeats, selectedTicketPrice]);
 
 	// Cập nhật giá sau voucher
@@ -204,7 +209,7 @@ const Booking = () => {
 			return;
 		}
 		setTicketInfo(data);
-		let price = 0;
+		let price = 69000;
 		if (data.tickets.adult > 0) price = 69000;
 		else if (data.tickets.student > 0) price = 49000;
 		else if (data.tickets.senior > 0) price = 50000;
@@ -212,14 +217,13 @@ const Booking = () => {
 	};
 
 	const handleSeatsChange = (seats) => {
-		console.log("📦 Booking nhận ghế từ SeatMap:", seats);
 		if (!isAdmin && bookingLocked) {
 			alert(
 				"Bạn đang có vé chờ thanh toán, vui lòng hoàn tất hoặc hủy trước khi đặt vé mới!",
 			);
 			return;
 		}
-		if (seats.length > ticketInfo.totalSeats && ticketInfo.totalSeats > 0) {
+		if (ticketInfo.totalSeats > 0 && seats.length > ticketInfo.totalSeats) {
 			alert(`Bạn chỉ có thể chọn ${ticketInfo.totalSeats} ghế!`);
 			return;
 		}
@@ -230,11 +234,9 @@ const Booking = () => {
 		if (voucherData) {
 			setAppliedVoucher(voucherData);
 			setVoucherDiscount(voucherData.discountAmount);
-			setFinalPrice(voucherData.finalAmount);
 		} else {
 			setAppliedVoucher(null);
 			setVoucherDiscount(0);
-			setFinalPrice(totalPrice);
 		}
 	};
 
@@ -265,25 +267,14 @@ const Booking = () => {
 			);
 			return;
 		}
-		if (ticketInfo.totalSeats === 0 && selectedSeats.length === 0) {
-			alert("Vui lòng chọn vé hoặc ghế!");
-			return;
-		}
-		if (
-			ticketInfo.totalSeats > 0 &&
-			selectedSeats.length !== ticketInfo.totalSeats
-		) {
-			alert(
-				`Bạn đã chọn ${ticketInfo.totalSeats} vé nhưng chỉ chọn ${selectedSeats.length} ghế!`,
-			);
-			return;
-		}
+
 		if (selectedSeats.length === 0) {
 			alert("Vui lòng chọn ghế!");
 			return;
 		}
 
 		setSubmitting(true);
+
 		try {
 			const config = {
 				headers: {
@@ -292,28 +283,35 @@ const Booking = () => {
 				},
 			};
 
+			const bookingData = {
+				showtimeId: showtimeId,
+				seats: selectedSeats.map((s) => s.id || `${s.row}${s.number}`),
+				totalAmount: finalPrice || totalPrice,
+				voucherCode: appliedVoucher?.code || null,
+				discountAmount: voucherDiscount || 0,
+				userId: user._id || user.id,
+			};
+
+			console.log("📤 Gửi dữ liệu đặt vé:", bookingData);
+
 			const response = await axios.post(
 				`${API_URL}/bookings/create`,
-				{
-					showtimeId,
-					seats: selectedSeats.map((s) => s.id),
-					totalAmount: finalPrice || totalPrice,
-					voucherCode: appliedVoucher?.code || null,
-					discountAmount: voucherDiscount || 0,
-				},
+				bookingData,
 				config,
 			);
 
-			console.log("📝 Response đặt vé:", response.data);
+			console.log("📥 Response đặt vé:", response.data);
 
 			if (response.data.success) {
 				const { bookingId, expiresAt, ticketCode, finalAmount, pointsEarned } =
-					response.data.data;
+					response.data.data || {};
 
-				if (!isAdmin) {
+				if (!isAdmin && bookingId) {
 					setCurrentBookingId(bookingId);
 					setBookingLocked(true);
-					startTimer(expiresAt, bookingId);
+					if (expiresAt) {
+						startTimer(expiresAt, bookingId);
+					}
 					localStorage.setItem(
 						"pendingBooking",
 						JSON.stringify({
@@ -324,28 +322,40 @@ const Booking = () => {
 					);
 				}
 
-				let successMsg = `Đặt vé thành công! Mã vé: ${ticketCode}\n`;
+				let successMsg = `✅ ĐẶT VÉ THÀNH CÔNG!\n\n`;
+				successMsg += `🎫 Mã vé: ${ticketCode || bookingId?.slice(-8) || "Đã tạo"}\n`;
 				successMsg += `💰 Tổng tiền: ${(finalAmount || finalPrice || totalPrice).toLocaleString()}đ\n`;
-				successMsg += `⭐ Nhận được ${pointsEarned} điểm thưởng`;
-				if (appliedVoucher) {
-					successMsg += `\n🎫 Đã áp dụng voucher: ${appliedVoucher.code} (giảm ${voucherDiscount.toLocaleString()}đ)`;
+				if (pointsEarned) {
+					successMsg += `⭐ Nhận được ${pointsEarned} điểm thưởng\n`;
 				}
+				if (appliedVoucher) {
+					successMsg += `🎫 Đã áp dụng voucher: ${appliedVoucher.code} (giảm ${voucherDiscount.toLocaleString()}đ)\n`;
+				}
+				successMsg += `\n⏰ Vui lòng thanh toán trong vòng 5 phút!`;
 
 				alert(successMsg);
 
 				if (!isAdmin) {
-					navigate(
-						`/payment?booking=${bookingId}&amount=${finalAmount || finalPrice || totalPrice}`,
-					);
+					if (bookingId) {
+						navigate(
+							`/payment?booking=${bookingId}&amount=${finalAmount || finalPrice || totalPrice}`,
+						);
+					} else {
+						navigate("/my-bookings");
+					}
 				} else {
 					navigate("/my-bookings");
 				}
 			} else {
-				alert(response.data.message);
+				alert(response.data.message || "Đặt vé thất bại!");
 			}
 		} catch (error) {
 			console.error("❌ Lỗi đặt vé:", error);
-			alert(error.response?.data?.message || "Có lỗi xảy ra!");
+			const errorMsg =
+				error.response?.data?.message ||
+				error.response?.data?.error ||
+				"Có lỗi xảy ra! Vui lòng thử lại.";
+			alert(errorMsg);
 		} finally {
 			setSubmitting(false);
 		}
@@ -367,50 +377,35 @@ const Booking = () => {
 			totalTicketPrice: 0,
 			totalSeats: 0,
 		});
-		setSelectedTicketPrice(0);
+		setSelectedTicketPrice(69000);
 		setVoucherDiscount(0);
 		setAppliedVoucher(null);
 		setResetCounter((prev) => prev + 1);
-		console.log("🗑️ Đã hủy toàn bộ lựa chọn");
 	};
 
-	if (loading)
+	if (loading) {
 		return (
 			<div className="loading text-center mt-5">Đang tải thông tin...</div>
 		);
-	if (!showtime)
+	}
+
+	if (!showtime) {
 		return <div className="text-center mt-5">Không tìm thấy suất chiếu</div>;
+	}
 
 	const roomDisplayName = showtime?.roomName || showtime?.room || "RẠP 01";
-	const roomType = showtime?.roomId?.type || "";
+	const roomType = showtime?.roomId?.type || showtime?.roomType || "";
 	const cinemaName = showtime?.cinemaName || "Dragonfire Cinema";
-
-	// Xác định loại vé đang chọn
-	let currentTicketType = "student";
-	if (ticketInfo.tickets.adult > 0) currentTicketType = "adult";
-	else if (ticketInfo.tickets.student > 0) currentTicketType = "student";
-	else if (ticketInfo.tickets.senior > 0) currentTicketType = "senior";
 
 	return (
 		<div className="container" style={{ padding: "2rem 1rem" }}>
 			<h1 className="section-title">🎫 ĐẶT VÉ</h1>
-			<div
-				style={{
-					background: "#1e1e1e",
-					padding: "1rem",
-					borderRadius: "12px",
-					marginBottom: "2rem",
-				}}
-			>
-				<h2>{showtime.movieId?.title}</h2>
-				<div
-					style={{
-						display: "flex",
-						gap: "1rem",
-						flexWrap: "wrap",
-						marginTop: "0.5rem",
-					}}
-				>
+
+			<div className="booking-info-card">
+				<h2>
+					{showtime.movieId?.title || showtime.movie?.title || "Đang cập nhật"}
+				</h2>
+				<div className="booking-meta">
 					<span>🏠 {cinemaName}</span>
 					<span>
 						🎭 {roomDisplayName}
@@ -429,38 +424,15 @@ const Booking = () => {
 							{ hour: "2-digit", minute: "2-digit" },
 						)}
 					</span>
-					{isAdmin && <span style={{ color: "#ffc107" }}>👑 Chế độ Admin</span>}
+					{isAdmin && <span className="admin-badge">👑 Admin</span>}
 				</div>
 
 				{!isAdmin && bookingLocked && timer && timer !== "0:00" && (
-					<div
-						style={{
-							background: "rgba(255,193,7,0.2)",
-							padding: "12px",
-							borderRadius: "8px",
-							marginTop: "15px",
-							textAlign: "center",
-							border: "1px solid #ffc107",
-						}}
-					>
-						⏳{" "}
-						<span
-							style={{ color: "#ffc107", fontSize: "28px", fontWeight: "bold" }}
-						>
-							{timer}
-						</span>
-						<span style={{ marginLeft: "10px" }}>còn lại để thanh toán</span>
+					<div className="timer-warning">
+						⏳ <span className="timer">{timer}</span> còn lại để thanh toán
 						<button
 							onClick={handleCancelLockedBooking}
-							style={{
-								marginLeft: "20px",
-								padding: "5px 15px",
-								background: "#e50914",
-								color: "#fff",
-								border: "none",
-								borderRadius: "5px",
-								cursor: "pointer",
-							}}
+							className="btn-cancel-booking"
 						>
 							Hủy đặt vé
 						</button>
@@ -484,23 +456,16 @@ const Booking = () => {
 				roomType={roomType}
 			/>
 
-			{/* Voucher Input - Chỉ hiển thị khi có ghế hoặc vé */}
 			{(selectedSeats.length > 0 || ticketInfo.totalSeats > 0) && (
 				<VoucherInput
 					onVoucherApplied={handleVoucherApplied}
 					totalAmount={totalPrice}
 					token={token}
-					ticketTypes={[currentTicketType]}
+					ticketTypes={[]}
 					seatTypes={selectedSeats.map((s) =>
 						s.type === "vip" ? "vip" : "normal",
 					)}
-					ticketItems={[
-						{
-							type: currentTicketType,
-							price: selectedTicketPrice,
-							quantity: ticketInfo.totalSeats || selectedSeats.length,
-						},
-					]}
+					ticketItems={[]}
 					seatItems={selectedSeats.map((s) => ({
 						type: s.type === "vip" ? "vip" : "normal",
 						price: s.type === "vip" ? 120000 : selectedTicketPrice,

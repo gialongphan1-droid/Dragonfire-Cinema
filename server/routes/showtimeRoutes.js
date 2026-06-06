@@ -8,6 +8,7 @@ router.get("/", showtimeController.getAllShowtimes);
 router.get("/movie/:movieId", showtimeController.getShowtimesByMovie);
 router.get("/:id", showtimeController.getShowtimeById);
 router.get("/:id/seats", showtimeController.getAvailableSeats);
+router.get("/:id/remaining-seats", showtimeController.getRemainingSeats); // THÊM DÒNG NÀY
 
 // === ADMIN ROUTES ===
 router.post("/", verifyToken, isAdmin, showtimeController.createShowtime);
